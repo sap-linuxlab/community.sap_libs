@@ -11,7 +11,8 @@ v1.0.0
 Release Summary
 ---------------
 
-This is the major release of the ``community.sap_libs`` collection. It is the initial relase for the ``community.sap_libs`` collection
+This is the major release of the ``community.sap_libs`` collection. It is the initial relase for the ``community.sap_libs`` collection.
+The collection is migrated from ansible-collection/community.sap.
 
 New Modules
 -----------
