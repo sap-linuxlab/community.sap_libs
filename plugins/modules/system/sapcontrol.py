@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2022, Rainer Leber rainerleber@gmail.com, rainer.leber@sva.de>,
+# Copyright: (c) 2022, Rainer Leber rainerleber@gmail.com, rainer.leber@sva.de,
 #                      Robert Kraemer @rkpobe, robert.kraemer@sva.de
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
