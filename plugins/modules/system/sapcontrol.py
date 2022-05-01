@@ -351,7 +351,7 @@ def main():
 
     if not HAS_SUDS_LIBRARY:
         module.fail_json(
-            msg=missing_required_lib('pyrfc'),
+            msg=missing_required_lib('suds'),
             exception=SUDS_LIBRARY_IMPORT_ERROR)
 
     if function == "Stop":
