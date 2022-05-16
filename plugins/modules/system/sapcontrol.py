@@ -187,19 +187,19 @@ EXAMPLES = r"""
 - name: GetProcessList with sysnr
   community.sap_libs.sapcontrol:
     hostname: 192.168.8.15
-    sysnr: 01
+    sysnr: "01"
     function: GetProcessList
 
 - name: GetProcessList with custom port
   community.sap_libs.sapcontrol:
     hostname: 192.168.8.15
     function: GetProcessList
-    port: "50113"
+    port: 50113
 
 - name: ParameterValue
   community.sap_libs.sapcontrol:
     hostname: 192.168.8.15
-    sysnr: 01
+    sysnr: "01"
     username: hdbadm
     password: test1234#
     function: ParameterValue
