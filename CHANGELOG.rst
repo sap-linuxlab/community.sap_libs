@@ -1,6 +1,6 @@
-===========================
+================================
 Community SAP_LIBS Release Notes
-===========================
+================================
 
 .. contents:: Topics
 
@@ -11,7 +11,7 @@ v1.1.0
 Release Summary
 ---------------
 
-This is the minor release of the ``community.sap_libs`` collection.
+This is the first minor release of the ``community.sap_libs`` collection.
 This changelog contains all changes to the modules and plugins in this collection
 that have been made after the previous release.
 
