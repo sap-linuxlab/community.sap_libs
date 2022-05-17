@@ -69,6 +69,7 @@ Tested Ansible versions:
 - 2.10
 - 2.11
 - 2.12
+- 2.13
 - devel
 
 Tested Python versions:
@@ -105,6 +106,7 @@ For some modules the below requirements are needed on the host that executes a m
   - [sap_snote](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_snote.html)
   - [sap_user](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_user.html)
   - [sap_system_facts](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_system_facts.html)
+  - [sapcontrol](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sapcontrol.html)
 
 ## Using this collection
 

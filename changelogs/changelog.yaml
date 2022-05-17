@@ -10,12 +10,6 @@ releases:
     - description: Execute SQL on HANA
       name: hana_query
       namespace: database.saphana
-    - description: Perform SAP Task list execution
-      name: sap_task_list_execute
-      namespace: system
-    - description: Manages SAP SAPCAR archives
-      name: sapcar_extract
-      namespace: files
     - description: This module will manage a company entities in a SAP S4HANA environment
       name: sap_company
       namespace: identity
@@ -26,7 +20,26 @@ releases:
     - description: Gathers SAP facts in a host
       name: sap_system_facts
       namespace: system
+    - description: Perform SAP Task list execution
+      name: sap_task_list_execute
+      namespace: system
     - description: This module will manage a user entities in a SAP S4/HANA environment
       name: sap_user
       namespace: identity
-    release_date: '2022-24-04'
+    - description: Manages SAP SAPCAR archives
+      name: sapcar_extract
+      namespace: files
+  1.1.0:
+    changes:
+      release_summary: 'This is the minor release of the ``community.sap_libs`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 1.1.0.yml
+    modules:
+    - description: Manages SAPCONTROL
+      name: sapcontrol
+      namespace: system
+    release_date: '2022-05-17'

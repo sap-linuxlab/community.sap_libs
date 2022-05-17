@@ -2,7 +2,7 @@
 
 namespace: community
 name: sap_libs
-version: 1.0.0
+version: 1.1.0
 readme: README.md
 authors:
   - Rainer Leber (github.com/rainerleber)
@@ -11,10 +11,10 @@ description: SAP Module community collection for Ansible
 license_file: LICENSE
 tags:
   - sap
-repository: https://github.com/ansible-collections/community.sap
-documentation: https://github.com/ansible-collection/community.sap
-homepage: https://github.com/ansible-collections/community.sap
-issues: https://github.com/ansible-collections/community.sap/issues
+repository: https://github.com/sap-linuxlab/community.sap_libs
+documentation: https://github.com/sap-linuxlab/community.sap_libs
+homepage: https://github.com/sap-linuxlab/community.sap_libs
+issues: https://github.com/sap-linuxlab/community.sap_libs
 build_ignore:
 # https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html#ignoring-files-and-folders
   - .gitignore
