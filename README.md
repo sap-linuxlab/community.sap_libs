@@ -174,6 +174,6 @@ Please have a look at the project board.
 
 <!-- Include the appropriate license information here and a pointer to the full licensing details. If the collection contains modules migrated from the ansible/ansible repo, you must use the same license that existed in the ansible/ansible repo. See the GNU license example below. -->
 
-GNU General Public License v3.0 or later.
+Apache License, Version 2.0
 
-See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
+See [LICENSE](http://www.apache.org/licenses/LICENSE-2.0) to see the full text.
