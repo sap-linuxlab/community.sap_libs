@@ -8,14 +8,16 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: sap_snote
+module: sap_pyrfc
 
-short_description: This module will upload and (de)implements C(SNOTES) in a SAP S4HANA environment.
+short_description: This module executes rfc methods.
 
-version_added: "1.0.0"
+version_added: "1.2.0"
 
 description:
-    - This module will use the Function Group C(SCWB_API).
+    - This module will executes rfc calls on a sap system.
+    - It is a generic approach to call rfc methods on a SAP System.
+    - This module should be used where no module or role is provided.
 
 options:
     function:
@@ -25,7 +27,7 @@ options:
     parameters:
         description: The parameters which are needed by the function.
         required: true
-        type: str
+        type: dict
     connection:
         description: The required connection details.
         required: true
@@ -129,7 +131,7 @@ def main():
         sysnr=dict(type='str', required=True),
         client=dict(type='str', required=True),
         user=dict(type='str', required=True),
-        passwd=dict(type='str', required=True),
+        passwd=dict(type='str', required=True, no_log=True),
         lang=dict(type='str', required=False),
     )
 
