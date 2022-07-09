@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2022, Sean Freeman, 
+# Copyright: (c) 2022, Sean Freeman ,
 #                      Rainer Leber <rainerleber@gmail.com> <rainer.leber@sva.de>
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -31,10 +31,38 @@ options:
         required: true
         type: dict
         suboptions:
-          TASKNAME:
-            description: The name of the task in the task list.
+          ashost:
+            description: The required host for the SAP system. Can be either an FQDN or IP Address.
             type: str
             required: true
+          sysid:
+            description: The systemid of the SAP system.
+            type: str
+            required: false
+          sysnr:
+            description:
+            - The system number of the SAP system.
+            - You must quote the value to ensure retaining the leading zeros.
+            type: str
+            required: true
+          client:
+            description:
+            - The client number to connect to.
+            - You must quote the value to ensure retaining the leading zeros.
+            type: str
+            required: true
+          user:
+            description: The required username for the SAP system.
+            type: str
+            required: true
+          passwd:
+            description: The required password for the SAP system.
+            type: str
+            required: true
+          lang:
+            description: The used language to execute.
+            type: str
+            required: false
 
 requirements:
     - pyrfc >= 2.4.0
@@ -67,11 +95,11 @@ result:
     sample: {'...'}
 '''
 
-from ansible.module_utils.basic import AnsibleModule
 import traceback
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 try:
     from pyrfc import (ABAPApplicationError, ABAPRuntimeError, CommunicationError,
-                   Connection, LogonError)
+                       Connection, LogonError)
 except ImportError:
     HAS_PYRFC_LIBRARY = False
     PYRFC_LIBRARY_IMPORT_ERROR = traceback.format_exc()
@@ -94,10 +122,10 @@ def get_connection(module, conn_params):
     return conn
 
 
-def main():  
+def main():
     params_spec = dict(
         ashost=dict(type='str', required=True),
-        sysid=dict(type='str', required=True),
+        sysid=dict(type='str', required=False),
         sysnr=dict(type='str', required=True),
         client=dict(type='str', required=True),
         user=dict(type='str', required=True),
@@ -107,7 +135,8 @@ def main():
 
     argument_spec = dict(function=dict(required=True, type='str'),
                          parameters=dict(required=True, type='dict'),
-                         connection=dict(required=True, type='dict', options=params_spec),
+                         connection=dict(
+                             required=True, type='dict', options=params_spec),
                          )
 
     module = AnsibleModule(
@@ -133,7 +162,8 @@ def main():
 
     # Check mode
     if module.check_mode:
-        msg = "function: %s; params: %s; login: %s" % (function, func_params, conn_params)
+        msg = "function: %s; params: %s; login: %s" % (
+            function, func_params, conn_params)
         module.exit_json(msg=msg, changed=True)
 
     try:
