@@ -31,25 +31,46 @@ class TestSAPRfcModule(ModuleTestCase):
             set_module_args({})
             self.module.main()
 
-    # def test_error_no_task_list(self):
-    #     """tests fail missing connections details"""
+    def test_error_module_not_found(self):
+        """tests fail module error"""
 
-    #     set_module_args({
-    #         "function": "STFC_CONNECTION",
-    #         "parameters": { "REQUTEXT": "Hello SAP!" },
-    #         "connection": { "ashost": "s4hana.poc.cloud",
-    #                         "sysnr": "01",
-    #                         "client": "400",
-    #                         "user": "DDIC",
-    #                         "passwd": "Password1",
-    #                         "lang": "EN" }
-    #     })
+        set_module_args({
+            "function": "STFC_CONNECTION",
+            "parameters": { "REQUTEXT": "Hello SAP!" },
+            "connection": { "ashost": "s4hana.poc.cloud",
+                            "sysnr": "01",
+                            "client": "400",
+                            "user": "DDIC",
+                            "passwd": "Password1",
+                            "lang": "EN" }
+        })
 
-    #     with patch.object(self.module, 'Connection') as conn:
-    #         conn.return_value = ''
-    #         with self.assertRaises(AnsibleFailJson) as result:
-    #             self.module.main()
-    #         self.assertEqual(result.exception.args[0]['msg'], 'Missing required login fields: client')
+        with self.assertRaises(AnsibleFailJson) as result:
+            self.module.HAS_PYRFC_LIBRARY = False
+            self.module.PYRFC_LIBRARY_IMPORT_ERROR = 'Module not found'
+            self.module.main()
+        self.assertEqual(result.exception.args[0]['exception'], 'Module not found')
+
+    def test_error_communication(self):
+        """tests fail missing connections details"""
+
+        set_module_args({
+            "function": "STFC_CONNECTION",
+            "parameters": { "REQUTEXT": "Hello SAP!" },
+            "connection": { "ashost": "s4hana.poc.cloud",
+                            "sysnr": "01",
+                            "client": "400",
+                            "user": "DDIC",
+                            "passwd": "Password1",
+                            "lang": "EN" }
+        })
+        with patch.object(self.module, 'get_connection') as test_connection:
+            test_connection.return_value =
+
+            with self.assertRaises(AnsibleExitJson) as result:
+                self.module.Connection.side_effect = Mock(side_effect=Exception('Test'))
+                self.module.main()
+        self.assertEqual(result.exception.args[0]['msg'], {})
 
     # def test_success(self):
     #     """test execute task list success"""
