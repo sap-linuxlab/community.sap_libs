@@ -72,7 +72,7 @@ class TestSAPRfcModule(ModuleTestCase):
                 self.module.Connection.side_effect = Mock(
                     side_effect=Exception('Test'))
                 self.module.main()
-        self.assertEqual(result.exception.args[0]['msg'], {})
+        self.assertEqual(result.exception.args[0], {})
 
     # def test_success(self):
     #     """test execute task list success"""
