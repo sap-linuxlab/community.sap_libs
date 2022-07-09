@@ -30,6 +30,11 @@ options:
         description: The required connection details.
         required: true
         type: dict
+        suboptions:
+          TASKNAME:
+            description: The name of the task in the task list.
+            type: str
+            required: true
 
 requirements:
     - pyrfc >= 2.4.0
