@@ -6,7 +6,7 @@ This repository contains the community.sap_libs Ansible Collection. The collecti
 
 # SAP Module Collection for Ansible
 <!-- Add CI and code coverage badges here. Samples included below. -->
-[![CI](https://github.com/sap-linuxlab/community.sap_libs/workflows/CI/badge.svg?event=push)](https://github.com/sap-linuxlab/community.sap_libs/actions) [![Codecov](https://img.shields.io/codecov/c/github/sap-linuxlab/community.sap_libs)](https://codecov.io/gh/sap-linuxlab/community.sap_libs)
+[![CI](https://github.com/sap-linuxlab/community.sap_libs/workflows/CI/badge.svg)](https://github.com/sap-linuxlab/community.sap_libs/actions) [![Codecov](https://img.shields.io/codecov/c/github/sap-linuxlab/community.sap_libs)](https://codecov.io/gh/sap-linuxlab/community.sap_libs)
 
 <!-- Describe the collection and why a user would want to use it. What does the collection do? -->
 
