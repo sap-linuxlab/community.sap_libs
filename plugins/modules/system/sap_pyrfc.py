@@ -176,8 +176,5 @@ def main():
         msg = "ABAP error occurred: %s" % err.message
         module.fail_json(msg=msg, exception=err)
 
-    module.exit_json(failed=False)
-
-
 if __name__ == '__main__':
     main()
