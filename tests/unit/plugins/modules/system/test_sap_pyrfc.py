@@ -1,16 +1,15 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
+from ansible_collections.community.sap_libs.plugins.modules.system import sap_pyrfc
 __metaclass__ = type
 
 import sys
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock
+from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 sys.modules['pyrfc'] = MagicMock()
 sys.modules['pyrfc.Connection'] = MagicMock()
-
-from ansible_collections.community.sap_libs.plugins.modules.system import sap_pyrfc
 
 
 class TestSAPRfcModule(ModuleTestCase):
@@ -36,40 +35,42 @@ class TestSAPRfcModule(ModuleTestCase):
 
         set_module_args({
             "function": "STFC_CONNECTION",
-            "parameters": { "REQUTEXT": "Hello SAP!" },
-            "connection": { "ashost": "s4hana.poc.cloud",
-                            "sysnr": "01",
-                            "client": "400",
-                            "user": "DDIC",
-                            "passwd": "Password1",
-                            "lang": "EN" }
+            "parameters": {"REQUTEXT": "Hello SAP!"},
+            "connection": {"ashost": "s4hana.poc.cloud",
+                           "sysnr": "01",
+                           "client": "400",
+                           "user": "DDIC",
+                           "passwd": "Password1",
+                           "lang": "EN"}
         })
 
         with self.assertRaises(AnsibleFailJson) as result:
             self.module.HAS_PYRFC_LIBRARY = False
             self.module.PYRFC_LIBRARY_IMPORT_ERROR = 'Module not found'
             self.module.main()
-        self.assertEqual(result.exception.args[0]['exception'], 'Module not found')
+        self.assertEqual(
+            result.exception.args[0]['exception'], 'Module not found')
 
     def test_error_communication(self):
         """tests fail missing connections details"""
 
         set_module_args({
             "function": "STFC_CONNECTION",
-            "parameters": { "REQUTEXT": "Hello SAP!" },
-            "connection": { "ashost": "s4hana.poc.cloud",
-                            "sysnr": "01",
-                            "client": "400",
-                            "user": "DDIC",
-                            "passwd": "Password1",
-                            "lang": "EN" }
+            "parameters": {"REQUTEXT": "Hello SAP!"},
+            "connection": {"ashost": "s4hana.poc.cloud",
+                           "sysnr": "01",
+                           "client": "400",
+                           "user": "DDIC",
+                           "passwd": "Password1",
+                           "lang": "EN"}
         })
-        # with patch.object(self.module, 'get_connection') as test_connection:
-        #     test_connection.return_value = 
+        with patch.object(self.module, 'get_connection') as test_connection:
+            test_connection.return_value = "success"
 
-        with self.assertRaises(AnsibleExitJson) as result:
-            self.module.Connection.side_effect = Mock(side_effect=Exception('Test'))
-            self.module.main()
+            with self.assertRaises(AnsibleExitJson) as result:
+                self.module.Connection.side_effect = Mock(
+                    side_effect=Exception('Test'))
+                self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], {})
 
     # def test_success(self):
