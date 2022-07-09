@@ -64,8 +64,8 @@ class TestSAPRfcModule(ModuleTestCase):
                             "passwd": "Password1",
                             "lang": "EN" }
         })
-        with patch.object(self.module, 'get_connection') as test_connection:
-            test_connection.return_value =
+        # with patch.object(self.module, 'get_connection') as test_connection:
+        #     test_connection.return_value = 
 
             with self.assertRaises(AnsibleExitJson) as result:
                 self.module.Connection.side_effect = Mock(side_effect=Exception('Test'))
