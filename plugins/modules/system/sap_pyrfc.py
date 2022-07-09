@@ -111,8 +111,7 @@ else:
 
 
 def get_connection(module, conn_params):
-    '''function to handle connection'''
-    module.warn(f"Connecting ... {conn_params['ashost']}")
+    module.warn('Connecting ... %s' % conn_params['ashost'])
     if "saprouter" in conn_params:
         module.warn("...via SAPRouter to SAP System")
     elif "gwhost" in conn_params:
@@ -122,12 +121,11 @@ def get_connection(module, conn_params):
 
     conn = Connection(**conn_params)
 
-    module.warn(f"Verifying connection is open/alive: {conn.alive}")
+    module.warn("Verifying connection is open/alive: %s" % conn.alive)
     return conn
 
 
 def main():
-    '''main function'''
     params_spec = dict(
         ashost=dict(type='str', required=True),
         sysid=dict(type='str', required=False),
@@ -160,7 +158,8 @@ def main():
 
     # Check mode
     if module.check_mode:
-        msg = f"function: {function}; params: {func_params}; login: {conn_params}"
+        msg = "function: %s; params: %s; login: %s" % (
+            function, func_params, conn_params)
         module.exit_json(msg=msg, changed=True)
 
     try:
@@ -168,13 +167,13 @@ def main():
         result = conn.call(function, **func_params)
         module.exit_json(changed=True, result=result)
     except CommunicationError as err:
-        msg = f"Could not connect to server: {err.message}"
+        msg = "Could not connect to server: %s" % err.message
         module.fail_json(msg=msg, exception=err)
     except LogonError as err:
-        msg = f"Could not log in: {err.message}"
+        msg = "Could not log in: %s" % err.message
         module.fail_json(msg=msg, exception=err)
     except (ABAPApplicationError, ABAPRuntimeError) as err:
-        msg = f"ABAP error occurred: {err.message}"
+        msg = "ABAP error occurred: %s" % err.message
         module.fail_json(msg=msg, exception=err)
 
     module.exit_json(failed=False)
