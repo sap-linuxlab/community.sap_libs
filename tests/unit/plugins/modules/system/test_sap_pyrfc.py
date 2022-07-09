@@ -67,9 +67,9 @@ class TestSAPRfcModule(ModuleTestCase):
         # with patch.object(self.module, 'get_connection') as test_connection:
         #     test_connection.return_value = 
 
-            with self.assertRaises(AnsibleExitJson) as result:
-                self.module.Connection.side_effect = Mock(side_effect=Exception('Test'))
-                self.module.main()
+        with self.assertRaises(AnsibleExitJson) as result:
+            self.module.Connection.side_effect = Mock(side_effect=Exception('Test'))
+            self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], {})
 
     # def test_success(self):
