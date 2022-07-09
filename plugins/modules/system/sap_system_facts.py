@@ -25,7 +25,7 @@ notes:
 
 EXAMPLES = r'''
 - name: Return SAP system ansible_facts
-  community.sap_libs.sap_system_fact:
+  community.sap_libs.sap_system_facts:
 '''
 
 RETURN = r'''
