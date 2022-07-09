@@ -68,7 +68,7 @@ class TestSAPRfcModule(ModuleTestCase):
         with patch.object(self.module, 'get_connection') as connection:
             connection.return_value.ok = PropertyMock(return_value=False)
 
-            with self.assertRaises(AnsibleExitJson) as result:
+            with self.assertRaises(AnsibleFailJson) as result:
                 self.module.Connection.side_effect = Mock(
                     side_effect=Exception(KeyError, 'This error'))
                 self.module.main()
