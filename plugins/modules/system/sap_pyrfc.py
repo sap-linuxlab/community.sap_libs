@@ -10,13 +10,13 @@ DOCUMENTATION = r'''
 ---
 module: sap_pyrfc
 
-short_description: This module executes rfc methods.
+short_description: This module executes rfc functions.
 
 version_added: "1.2.0"
 
 description:
     - This module will executes rfc calls on a sap system.
-    - It is a generic approach to call rfc methods on a SAP System.
+    - It is a generic approach to call rfc functions on a SAP System.
     - This module should be used where no module or role is provided.
 
 options:
@@ -75,7 +75,7 @@ author:
 '''
 
 EXAMPLES = '''
-sap_pyrfc:
+community.sap_libs.sap_pyrfc:
   function: STFC_CONNECTION
   parameters:
     REQUTEXT: "Hello SAP!"
@@ -154,13 +154,6 @@ def main():
         module.fail_json(
             msg=missing_required_lib('pyrfc'),
             exception=PYRFC_LIBRARY_IMPORT_ERROR)
-
-    # Validate connection fields
-    required_conn_fields = ['ashost', 'sysnr', 'client', 'user', 'passwd']
-    missing = [f for f in required_conn_fields if f not in conn_params]
-    if missing:
-        msg = 'Missing required login fields: %s' % ', '.join(missing)
-        module.fail_json(msg=msg)
 
     # Check mode
     if module.check_mode:
