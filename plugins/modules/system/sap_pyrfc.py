@@ -166,15 +166,15 @@ def main():
         conn = get_connection(module, conn_params)
         result = conn.call(function, **func_params)
         module.exit_json(changed=True, result=result)
-    except CommunicationError as e:
-        msg = "Could not connect to server: %s" % e.message
-        module.fail_json(msg=msg, exception=e)
-    except LogonError as e:
-        msg = "Could not log in: %s" % e.message
-        module.fail_json(msg=msg, exception=e)
-    except (ABAPApplicationError, ABAPRuntimeError) as e:
-        msg = "ABAP error occurred: %s" % e.message
-        module.fail_json(msg=msg, exception=e)
+    except CommunicationError as err:
+        msg = "Could not connect to server: %s" % err.message
+        module.fail_json(msg=msg, exception=err)
+    except LogonError as err:
+        msg = "Could not log in: %s" % err.message
+        module.fail_json(msg=msg, exception=err)
+    except (ABAPApplicationError, ABAPRuntimeError) as err:
+        msg = "ABAP error occurred: %s" % err.message
+        module.fail_json(msg=msg, exception=err)
 
     module.exit_json(failed=False)
 
