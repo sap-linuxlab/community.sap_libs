@@ -5,7 +5,7 @@ from ansible_collections.community.sap_libs.plugins.modules.system import sap_py
 __metaclass__ = type
 
 import sys
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock
+from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock, PropertyMock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 sys.modules['pyrfc'] = MagicMock()
@@ -64,8 +64,9 @@ class TestSAPRfcModule(ModuleTestCase):
                            "passwd": "Password1",
                            "lang": "EN"}
         })
+       
         with patch.object(self.module, 'get_connection') as test_connection:
-            test_connection.return_value = "success"
+            test_connection.return_value.ok = PropertyMock(return_value=True)
 
             with self.assertRaises(AnsibleExitJson) as result:
                 self.module.Connection.side_effect = Mock(
