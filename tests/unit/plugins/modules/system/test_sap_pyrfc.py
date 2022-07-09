@@ -64,7 +64,7 @@ class TestSAPRfcModule(ModuleTestCase):
                            "passwd": "Password1",
                            "lang": "EN"}
         })
-       
+
         with patch.object(self.module, 'get_connection') as test_connection:
             test_connection.return_value.ok = PropertyMock(return_value=True)
 
