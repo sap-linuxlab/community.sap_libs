@@ -76,18 +76,19 @@ author:
 '''
 
 EXAMPLES = '''
-community.sap_libs.sap_pyrfc:
-  function: STFC_CONNECTION
-  parameters:
-    REQUTEXT: "Hello SAP!"
-  connection:
-    ashost: s4hana.poc.cloud
-    sysid: TDT
-    sysnr: "01"
-    client: "400"
-    user: DDIC
-    passwd: Password1
-    lang: EN
+- name: test the pyrfc module
+  community.sap_libs.sap_pyrfc:
+    function: STFC_CONNECTION
+    parameters:
+      REQUTEXT: "Hello SAP!"
+    connection:
+      ashost: s4hana.poc.cloud
+      sysid: TDT
+      sysnr: "01"
+      client: "400"
+      user: DDIC
+      passwd: Password1
+      lang: EN
 '''
 
 RETURN = r'''
@@ -95,14 +96,14 @@ result:
     description: The execution description.
     type: dict
     returned: always
-    sample: {'...'}
+    sample: {"ECHOTEXT": "Hello SAP!",
+             "RESPTEXT": "SAP R/3 Rel. 756   Sysid: TST      Date: 20220710   Time: 140717   Logon_Data: 000/DDIC/E"}
 '''
 
 import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 try:
-    from pyrfc import (ABAPApplicationError, ABAPRuntimeError, CommunicationError,
-                       Connection, LogonError)
+    from pyrfc import ABAPApplicationError, ABAPRuntimeError, CommunicationError, Connection, LogonError
 except ImportError:
     HAS_PYRFC_LIBRARY = False
     PYRFC_LIBRARY_IMPORT_ERROR = traceback.format_exc()
@@ -126,6 +127,7 @@ def get_connection(module, conn_params):
 
 
 def main():
+    msg = None
     params_spec = dict(
         ashost=dict(type='str', required=True),
         sysid=dict(type='str', required=False),
@@ -165,16 +167,24 @@ def main():
     try:
         conn = get_connection(module, conn_params)
         result = conn.call(function, **func_params)
-        module.exit_json(changed=True, result=result)
     except CommunicationError as err:
-        msg = "Could not connect to server: %s" % err.message
-        module.fail_json(msg=msg, exception=err)
+        msg = "Could not connect to server"
+        error_msg = err.message
     except LogonError as err:
-        msg = "Could not log in: %s" % err.message
-        module.fail_json(msg=msg, exception=err)
+        msg = "Could not log in"
+        error_msg = err.message
     except (ABAPApplicationError, ABAPRuntimeError) as err:
-        msg = "ABAP error occurred: %s" % err.message
-        module.fail_json(msg=msg, exception=err)
+        msg = "ABAP error occurred"
+        error_msg = err.message
+    except Exception as err:
+        msg = "Something went wrong."
+        error_msg = err
+    else:
+        module.exit_json(changed=True, result=result)
+
+    if msg:
+        module.fail_json(msg=msg, exception=error_msg)
+
 
 if __name__ == '__main__':
     main()
