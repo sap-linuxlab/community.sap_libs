@@ -10,7 +10,7 @@ from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils imp
 
 sys.modules['pyrfc'] = MagicMock()
 sys.modules['pyrfc.Connection'] = MagicMock()
-from ansible_collections.community.sap_libs.plugins.modules.system import sap_pyrfc
+from ansible_collections.community.sap_libs.plugins.modules import sap_pyrfc
 
 
 class TestSAPRfcModule(ModuleTestCase):
