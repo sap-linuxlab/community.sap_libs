@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright: (c) 2022, Sean Freeman ,
@@ -22,16 +21,18 @@ import traceback
 
 PYRFC_LIBRARY_IMPORT_ERROR = None
 try:
-    import pyrfc 
+    import pyrfc
 except ImportError:
     PYRFC_LIBRARY_IMPORT_ERROR = traceback.format_exc()
     HAS_PYRFC_LIBRARY = False
 else:
     HAS_PYRFC_LIBRARY = True
 
+
 def get_connection(module, conn_params):
     if not HAS_PYRFC_LIBRARY:
-        module.fail_json(msg=missing_required_lib("python-gitlab"), exception=PYRFC_LIBRARY_IMPORT_ERROR)
+        module.fail_json(msg=missing_required_lib(
+            "python-gitlab"), exception=PYRFC_LIBRARY_IMPORT_ERROR)
 
     module.warn('Connecting ... %s' % conn_params['ashost'])
     if "saprouter" in conn_params:
