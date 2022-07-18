@@ -1,0 +1,1 @@
+plugins/modules/sap_pyrfc.py validate-modules:missing-gplv3-license # Licensed under Apache 2.0
