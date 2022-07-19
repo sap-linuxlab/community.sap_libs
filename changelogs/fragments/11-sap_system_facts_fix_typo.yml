@@ -1,2 +1,0 @@
-bugfixes:
-  - syp_system_facts - fix a typo in the usage example which lead to an error if it used as supposed.

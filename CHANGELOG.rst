@@ -1,9 +1,29 @@
-================================
-Community SAP_LIBS Release Notes
-================================
+===========================
+Community SAP Release Notes
+===========================
 
 .. contents:: Topics
 
+
+v1.2.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``community.sap_libs`` collection.
+This changelog contains changes to the modules and plugins in this collection
+that have been made after the previous release.
+
+Bugfixes
+--------
+
+- syp_system_facts - fix a typo in the usage example which lead to an error if it used as supposed.
+
+New Modules
+-----------
+
+- sap_pyrfc - This module executes rfc functions.
 
 v1.1.0
 ======
@@ -11,7 +31,7 @@ v1.1.0
 Release Summary
 ---------------
 
-This is the first minor release of the ``community.sap_libs`` collection.
+This is the minor release of the ``community.sap_libs`` collection.
 This changelog contains all changes to the modules and plugins in this collection
 that have been made after the previous release.
 
@@ -29,7 +49,7 @@ v1.0.0
 Release Summary
 ---------------
 
-This is the first major release of the ``community.sap_libs`` collection. It is the initial relase for the ``community.sap_libs`` collection
+This is the minor release of the ``community.sap`` collection. It is the initial relase for the ``community.sap`` collection
 
 New Modules
 -----------

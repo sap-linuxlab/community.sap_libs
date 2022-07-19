@@ -43,3 +43,21 @@ releases:
       name: sapcontrol
       namespace: system
     release_date: '2022-05-17'
+  1.2.0:
+    changes:
+      bugfixes:
+      - syp_system_facts - fix a typo in the usage example which lead to an error
+        if it used as supposed.
+      release_summary: 'This is the minor release of the ``community.sap_libs`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 1.2.0.yml
+    - 11-sap_system_facts_fix_typo.yml
+    modules:
+    - description: This module executes rfc functions.
+      name: sap_pyrfc
+      namespace: ''
+    release_date: '2022-07-18'
