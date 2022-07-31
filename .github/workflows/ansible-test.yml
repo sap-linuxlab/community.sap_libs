@@ -65,7 +65,7 @@ jobs:
         include:
           # Test Devel on Python 3.10 only
           - ansible: devel
-            python: 3.10
+            python: '3.10'
         
 
     steps:
