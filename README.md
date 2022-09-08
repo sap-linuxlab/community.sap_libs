@@ -99,7 +99,7 @@ For some modules the below requirements are needed on the host that executes a m
 ## Included content
 
 - **Modules**:
-  - [hana_query](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/hana_query.html)
+  - [sap_hdbsql](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_hdbsql.html)
   - [sap_task_list_execute](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_task_list_execute.html)
   - [sapcar_extract](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sapcar_extract.html)
   - [sap_company](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_company.html)
