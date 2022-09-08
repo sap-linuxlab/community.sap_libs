@@ -8,8 +8,8 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: hana_query
-short_description: Execute SQL on HANA
+module: sap_hdbsql
+short_description: Ansible Module to execute SQL on SAP HANA
 version_added: "1.0.0"
 description: This module executes SQL statements on HANA with hdbsql.
 options:
@@ -75,14 +75,14 @@ author:
 
 EXAMPLES = r'''
 - name: Simple select query
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
     query: select user_name from users
 
 - name: RUN select query with host port
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
@@ -90,7 +90,7 @@ EXAMPLES = r'''
     query: select user_name from users
 
 - name: Run several queries
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
@@ -101,7 +101,7 @@ EXAMPLES = r'''
     autocommit: False
 
 - name: Run several queries with path
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     bin_path: "/usr/sap/HDB/HDB01/exe/hdbsql"
     instance: "01"
     password: "Test123"
@@ -112,7 +112,7 @@ EXAMPLES = r'''
     autocommit: False
 
 - name: Run several queries from file
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
@@ -122,7 +122,7 @@ EXAMPLES = r'''
     host: "localhost"
 
 - name: Run several queries from user store
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     user: hdbstoreuser
