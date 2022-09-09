@@ -8,7 +8,7 @@ releases:
     - 1.0.0.yml
     modules:
     - description: Ansible Module to execute SQL on SAP HANA
-      name: sap_hdbsql
+      name: hana_query
       namespace: database.saphana
     - description: This module will manage a company entities in a SAP S4HANA environment
       name: sap_company
@@ -40,7 +40,7 @@ releases:
     - 1.1.0.yml
     modules:
     - description: Ansible Module to execute SAPCONTROL
-      name: sap_control_exec
+      name: sapcontrol
       namespace: system
     release_date: '2022-05-17'
   1.2.0:
