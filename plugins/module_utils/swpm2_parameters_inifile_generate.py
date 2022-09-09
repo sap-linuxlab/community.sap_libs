@@ -15,49 +15,47 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible.module_utils.basic import missing_required_lib
-
-import traceback
+from ansible.module_utils.six import raise_from
+from ansible.errors import AnsibleError
 
 import sys
 import os
 
-
-BS4_LIBRARY_IMPORT_ERROR = None
 try:
     from bs4 import BeautifulSoup
-except ImportError:
-    BS4_LIBRARY_IMPORT_ERROR = traceback.format_exc()
-    HAS_BS4_LIBRARY = False
+except ImportError as imp_exc:
+    BS4_LIBRARY_IMPORT_ERROR = imp_exc
 else:
-    HAS_BS4_LIBRARY = True
+    BS4_LIBRARY_IMPORT_ERROR = None
 
-LXML_LIBRARY_IMPORT_ERROR = None
+
 try:
     from lxml import etree
-except ImportError:
-    LXML_LIBRARY_IMPORT_ERROR = traceback.format_exc()
-    HAS_LXML_LIBRARY = False
+except ImportError as imp_exc:
+    LXML_LIBRARY_IMPORT_ERROR = imp_exc
 else:
-    HAS_LXML_LIBRARY = True
+    LXML_LIBRARY_IMPORT_ERROR = None
 
+if BS4_LIBRARY_IMPORT_ERROR:
+    raise_from(
+        AnsibleError('another_library must be installed to use this plugin'),
+        BS4_LIBRARY_IMPORT_ERROR)
 
-def debug_bs4(module):
+if LXML_LIBRARY_IMPORT_ERROR:
+    raise_from(
+        AnsibleError('another_library must be installed to use this plugin'),
+        LXML_LIBRARY_IMPORT_ERROR)
+
+def debug_bs4():
     # Diagnose XML file parsing errors in Beautiful Soup
     # https://stackoverflow.com/questions/56942892/cannot-parse-iso-8859-15-encoded-xml-with-bs4/56947172#56947172
-    if not HAS_BS4_LIBRARY:
-        module.fail_json(msg=missing_required_lib(
-            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
     from bs4.diagnose import diagnose
     with open('control.xml', 'rb') as f:
         diagnose(f)
 
 
 # SWPM2 control.xml conversion to utf8
-def control_xml_utf8(filepath, module):
-    if not HAS_LXML_LIBRARY:
-        module.fail_json(msg=missing_required_lib(
-            "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
+def control_xml_utf8(filepath):
     source = filepath + "/control.xml"
 
     # Convert control.xml from iso-8859-1 to UTF-8, so it can be used with Beautiful Soup lxml-xml parser
@@ -74,10 +72,7 @@ def control_xml_utf8(filepath, module):
 
 
 # SWPM2 Component and Parameters extract all as CSV
-def control_xml_to_csv(filepath, module):
-    if not HAS_BS4_LIBRARY:
-        module.fail_json(msg=missing_required_lib(
-            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
+def control_xml_to_csv(filepath):
 
     infile = open(filepath + "/control_utf8.xml", "r")
     contents = infile.read()
@@ -118,11 +113,7 @@ def control_xml_to_csv(filepath, module):
 
 
 # SWPM2 Component and Parameters extract all and generate template inifile.params
-def control_xml_to_inifile_params(filepath, module):
-    if not HAS_BS4_LIBRARY:
-        module.fail_json(msg=missing_required_lib(
-            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
-
+def control_xml_to_inifile_params(filepath):
     infile = open(filepath + "/control_utf8.xml", "r")
     contents = infile.read()
 
@@ -188,11 +179,7 @@ def control_xml_to_inifile_params(filepath, module):
 # SWPM2 product.catalog conversion to utf8
 
 
-def product_catalog_xml_utf8(filepath, module):
-    if not HAS_LXML_LIBRARY:
-        module.fail_json(msg=missing_required_lib(
-            "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
-
+def product_catalog_xml_utf8(filepath):
     source = filepath + "/product.catalog"
 
     # Convert control.xml from iso-8859-1 to UTF-8, so it can be used with Beautiful Soup lxml-xml parser
@@ -212,11 +199,7 @@ def product_catalog_xml_utf8(filepath, module):
 # Attributes possible for each entry = control-file, db, id, name, os, os-type, output-dir, ppms-component, ppms-component-release, product, product-dir, release, table
 
 
-def product_catalog_xml_to_csv(filepath, module):
-    if not HAS_BS4_LIBRARY:
-        module.fail_json(msg=missing_required_lib(
-            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
-
+def product_catalog_xml_to_csv(filepath):
     infile = open(filepath + "/product_catalog_utf8.xml", "r")
     contents = infile.read()
 
