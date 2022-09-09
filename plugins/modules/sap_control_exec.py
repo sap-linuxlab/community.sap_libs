@@ -8,9 +8,9 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: sapcontrol
+module: sap_control_exec
 
-short_description: Manages SAPCONTROL
+short_description: Ansible Module to execute SAPCONTROL
 
 version_added: "1.1.0"
 
@@ -185,19 +185,19 @@ notes:
 
 EXAMPLES = r"""
 - name: GetProcessList with sysnr
-  community.sap_libs.sapcontrol:
+  community.sap_libs.sap_control_exec:
     hostname: 192.168.8.15
     sysnr: "01"
     function: GetProcessList
 
 - name: GetProcessList with custom port
-  community.sap_libs.sapcontrol:
+  community.sap_libs.sap_control_exec:
     hostname: 192.168.8.15
     function: GetProcessList
     port: 50113
 
 - name: ParameterValue
-  community.sap_libs.sapcontrol:
+  community.sap_libs.sap_control_exec:
     hostname: 192.168.8.15
     sysnr: "01"
     username: hdbadm

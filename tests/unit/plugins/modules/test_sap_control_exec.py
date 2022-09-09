@@ -11,14 +11,14 @@ sys.modules['suds.client'] = MagicMock()
 sys.modules['suds.sudsobject'] = MagicMock()
 sys.modules['suds'] = MagicMock()
 
-from ansible_collections.community.sap_libs.plugins.modules.system import sapcontrol
+from ansible_collections.community.sap_libs.plugins.modules import sap_control_exec
 
 
 class TestSapcontrolModule(ModuleTestCase):
 
     def setUp(self):
         super(TestSapcontrolModule, self).setUp()
-        self.module = sapcontrol
+        self.module = sap_control_exec
 
     def tearDown(self):
         super(TestSapcontrolModule, self).tearDown()

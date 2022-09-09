@@ -7,8 +7,8 @@ releases:
     fragments:
     - 1.0.0.yml
     modules:
-    - description: Execute SQL on HANA
-      name: hana_query
+    - description: Ansible Module to execute SQL on SAP HANA
+      name: sap_hdbsql
       namespace: database.saphana
     - description: This module will manage a company entities in a SAP S4HANA environment
       name: sap_company
@@ -39,8 +39,8 @@ releases:
     fragments:
     - 1.1.0.yml
     modules:
-    - description: Manages SAPCONTROL
-      name: sapcontrol
+    - description: Ansible Module to execute SAPCONTROL
+      name: sap_control_exec
       namespace: system
     release_date: '2022-05-17'
   1.2.0:
@@ -57,7 +57,7 @@ releases:
     - 1.2.0.yml
     - 11-sap_system_facts_fix_typo.yml
     modules:
-    - description: This module executes rfc functions.
+    - description: Ansible Module for use of SAP PyRFC to execute SAP RFCs (Remote Function Calls) to SAP remote-enabled function modules
       name: sap_pyrfc
       namespace: ''
     release_date: '2022-07-18'
