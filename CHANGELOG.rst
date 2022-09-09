@@ -5,6 +5,29 @@ Community SAP Release Notes
 .. contents:: Topics
 
 
+v2.0.0
+======
+
+Release Summary
+---------------
+
+This is the 2.0.0 major release of the ``community.sap_libs`` collection.
+This changelog contains all changes to the modules and plugins in this collection
+that have been made after the previous release.
+
+Major Changes
+-------------
+
+- License requirements are updated.
+- The modules purposes are described clearer.
+- The namespaces of the modules are removed to provide a flatter design.
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- hana_query - module is moved to sap_hdbsql.
+- sapcontrol - module is moved to sap_control_exec to have a clearer separation to other roles and references.
+
 v1.2.0
 ======
 
@@ -12,7 +35,7 @@ Release Summary
 ---------------
 
 This is the minor release of the ``community.sap_libs`` collection.
-This changelog contains changes to the modules and plugins in this collection
+This changelog contains all changes to the modules and plugins in this collection
 that have been made after the previous release.
 
 Bugfixes
@@ -23,7 +46,7 @@ Bugfixes
 New Modules
 -----------
 
-- sap_pyrfc - This module executes rfc functions.
+- sap_pyrfc - Ansible Module for use of SAP PyRFC to execute SAP RFCs (Remote Function Calls) to SAP remote-enabled function modules
 
 v1.1.0
 ======
@@ -41,7 +64,7 @@ New Modules
 System
 ~~~~~~
 
-- sapcontrol - Manages SAPCONTROL
+- sapcontrol - Ansible Module to execute SAPCONTROL
 
 v1.0.0
 ======
@@ -60,7 +83,7 @@ Database
 saphana
 ^^^^^^^
 
-- hana_query - Execute SQL on HANA
+- hana_query - Ansible Module to execute SQL on SAP HANA
 
 Files
 ~~~~~

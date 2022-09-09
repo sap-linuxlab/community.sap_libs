@@ -57,7 +57,25 @@ releases:
     - 1.2.0.yml
     - 11-sap_system_facts_fix_typo.yml
     modules:
-    - description: Ansible Module for use of SAP PyRFC to execute SAP RFCs (Remote Function Calls) to SAP remote-enabled function modules
+    - description: Ansible Module for use of SAP PyRFC to execute SAP RFCs (Remote
+        Function Calls) to SAP remote-enabled function modules
       name: sap_pyrfc
       namespace: ''
     release_date: '2022-07-18'
+  2.0.0:
+    changes:
+      breaking_changes:
+      - hana_query - module is moved to sap_hdbsql.
+      - sapcontrol - module is moved to sap_control_exec to have a clearer separation
+        to other roles and references.
+      major_changes:
+      - License requirements are updated.
+      - The modules purposes are described clearer.
+      - The namespaces of the modules are removed to provide a flatter design.
+      release_summary: 'This is the 2.0.0 major release of the ``community.sap_libs``
+        collection.
+        This changelog contains all changes to the modules and plugins in this collection
+        that have been made after the previous release.'
+    fragments:
+    - 2.0.0.yml
+    release_date: '2022-09-09'
