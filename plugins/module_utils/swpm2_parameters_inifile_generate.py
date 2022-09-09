@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Copyright: (c) 2022, Sean Freeman ,
@@ -43,7 +43,7 @@ else:
     HAS_LXML_LIBRARY = True
 
 
-def debug_bs4(module):
+def debug_bs4(module: AnsibleModule):
     # Diagnose XML file parsing errors in Beautiful Soup
     # https://stackoverflow.com/questions/56942892/cannot-parse-iso-8859-15-encoded-xml-with-bs4/56947172#56947172
     if not HAS_BS4_LIBRARY:
@@ -55,7 +55,7 @@ def debug_bs4(module):
 
 
 # SWPM2 control.xml conversion to utf8
-def control_xml_utf8(filepath, module):
+def control_xml_utf8(filepath, module: AnsibleModule):
     if not HAS_LXML_LIBRARY:
         module.fail_json(msg=missing_required_lib(
             "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
