@@ -16,10 +16,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-
+from ansible.module_utils.basic import missing_required_lib
 import traceback
-
 import sys
 import os
 
@@ -264,6 +262,7 @@ else:
 if control_xml_path == "":
     control_xml_path = os.getcwd()
 
-control_xml_utf8(control_xml_path, AnsibleModule)
-control_xml_to_csv(control_xml_path, AnsibleModule)
-control_xml_to_inifile_params(control_xml_path, AnsibleModule)
+if os.path.exists(control_xml_path + '/control.xml'):
+    control_xml_utf8(control_xml_path, '')
+    control_xml_to_csv(control_xml_path, '')
+    control_xml_to_inifile_params(control_xml_path, '')
