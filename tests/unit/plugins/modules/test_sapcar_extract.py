@@ -6,7 +6,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.plugins.modules.files import sapcar_extract
+from ansible_collections.community.sap_libs.plugins.modules import sapcar_extract
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
 from ansible.module_utils import basic
