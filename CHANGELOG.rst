@@ -5,26 +5,22 @@ Community SAP Release Notes
 .. contents:: Topics
 
 
-v2.0.0
+v1.3.0
 ======
 
 Release Summary
 ---------------
 
-This is the 2.0.0 major release of the ``community.sap_libs`` collection.
+This is the 1.3.0 minor release of the ``community.sap_libs`` collection.
 This changelog contains all changes to the modules and plugins in this collection
 that have been made after the previous release.
 
-Major Changes
+Minor Changes
 -------------
 
 - License requirements are updated.
 - The modules purposes are described clearer.
 - The namespaces of the modules are removed to provide a flatter design.
-
-Breaking Changes / Porting Guide
---------------------------------
-
 - hana_query - module is moved to sap_hdbsql.
 - sapcontrol - module is moved to sap_control_exec to have a clearer separation to other roles and references.
 

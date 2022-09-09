@@ -62,20 +62,20 @@ releases:
       name: sap_pyrfc
       namespace: ''
     release_date: '2022-07-18'
-  2.0.0:
+  1.3.0:
     changes:
       breaking_changes:
-      - hana_query - module is moved to sap_hdbsql.
-      - sapcontrol - module is moved to sap_control_exec to have a clearer separation
-        to other roles and references.
-      major_changes:
+      minor_changes:
       - License requirements are updated.
       - The modules purposes are described clearer.
       - The namespaces of the modules are removed to provide a flatter design.
-      release_summary: 'This is the 2.0.0 major release of the ``community.sap_libs``
+      - hana_query - module is moved to sap_hdbsql.
+      - sapcontrol - module is moved to sap_control_exec to have a clearer separation
+        to other roles and references.
+      release_summary: 'This is the 1.3.0 minor release of the ``community.sap_libs``
         collection.
         This changelog contains all changes to the modules and plugins in this collection
         that have been made after the previous release.'
     fragments:
-    - 2.0.0.yml
+    - 1.3.0.yml
     release_date: '2022-09-09'
