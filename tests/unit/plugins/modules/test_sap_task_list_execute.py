@@ -12,7 +12,7 @@ sys.modules['pyrfc.Connection'] = MagicMock()
 sys.modules['xmltodict'] = MagicMock()
 sys.modules['xmltodict.parse'] = MagicMock()
 
-from ansible_collections.community.sap_libs.plugins.modules.system import sap_task_list_execute
+from ansible_collections.community.sap_libs.plugins.modules import sap_task_list_execute
 
 
 class TestSAPRfcModule(ModuleTestCase):
