@@ -1,25 +1,63 @@
-#!/bin/python
+# -*- coding: utf-8 -*-
 
-# Prerequisites:
-# pip install beautifulsoup4 lxml
+# Copyright: (c) 2022, Sean Freeman ,
+#                      Rainer Leber <rainerleber@gmail.com> <rainer.leber@sva.de>
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+from ansible.module_utils.basic import missing_required_lib
+
+import traceback
 
 import sys
 import os
 
-from bs4 import BeautifulSoup
-from lxml import etree
+
+BS4_LIBRARY_IMPORT_ERROR = None
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BS4_LIBRARY_IMPORT_ERROR = traceback.format_exc()
+    HAS_BS4_LIBRARY = False
+else:
+    HAS_BS4_LIBRARY = True
+
+LXML_LIBRARY_IMPORT_ERROR = None
+try:
+    from lxml import etree
+except ImportError:
+    LXML_LIBRARY_IMPORT_ERROR = traceback.format_exc()
+    HAS_LXML_LIBRARY = False
+else:
+    HAS_LXML_LIBRARY = True
 
 
-def debug_bs4():
+def debug_bs4(module):
     # Diagnose XML file parsing errors in Beautiful Soup
     # https://stackoverflow.com/questions/56942892/cannot-parse-iso-8859-15-encoded-xml-with-bs4/56947172#56947172
+    if not HAS_BS4_LIBRARY:
+        module.fail_json(msg=missing_required_lib(
+            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
     from bs4.diagnose import diagnose
     with open('control.xml', 'rb') as f:
         diagnose(f)
 
 
 # SWPM2 control.xml conversion to utf8
-def control_xml_utf8(filepath):
+def control_xml_utf8(filepath, module):
+    if not HAS_LXML_LIBRARY:
+        module.fail_json(msg=missing_required_lib(
+            "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
     source = filepath + "/control.xml"
 
     # Convert control.xml from iso-8859-1 to UTF-8, so it can be used with Beautiful Soup lxml-xml parser
@@ -36,7 +74,10 @@ def control_xml_utf8(filepath):
 
 
 # SWPM2 Component and Parameters extract all as CSV
-def control_xml_to_csv(filepath):
+def control_xml_to_csv(filepath, module):
+    if not HAS_BS4_LIBRARY:
+        module.fail_json(msg=missing_required_lib(
+            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
 
     infile = open(filepath + "/control_utf8.xml", "r")
     contents = infile.read()
@@ -77,7 +118,11 @@ def control_xml_to_csv(filepath):
 
 
 # SWPM2 Component and Parameters extract all and generate template inifile.params
-def control_xml_to_inifile_params(filepath):
+def control_xml_to_inifile_params(filepath, module):
+    if not HAS_BS4_LIBRARY:
+        module.fail_json(msg=missing_required_lib(
+            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
+
     infile = open(filepath + "/control_utf8.xml", "r")
     contents = infile.read()
 
@@ -143,7 +188,11 @@ def control_xml_to_inifile_params(filepath):
 # SWPM2 product.catalog conversion to utf8
 
 
-def product_catalog_xml_utf8(filepath):
+def product_catalog_xml_utf8(filepath, module):
+    if not HAS_LXML_LIBRARY:
+        module.fail_json(msg=missing_required_lib(
+            "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
+
     source = filepath + "/product.catalog"
 
     # Convert control.xml from iso-8859-1 to UTF-8, so it can be used with Beautiful Soup lxml-xml parser
@@ -163,7 +212,10 @@ def product_catalog_xml_utf8(filepath):
 # Attributes possible for each entry = control-file, db, id, name, os, os-type, output-dir, ppms-component, ppms-component-release, product, product-dir, release, table
 
 
-def product_catalog_xml_to_csv(filepath):
+def product_catalog_xml_to_csv(filepath, module):
+    if not HAS_BS4_LIBRARY:
+        module.fail_json(msg=missing_required_lib(
+            "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
 
     infile = open(filepath + "/product_catalog_utf8.xml", "r")
     contents = infile.read()

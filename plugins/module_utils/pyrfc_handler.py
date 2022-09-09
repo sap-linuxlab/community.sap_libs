@@ -32,7 +32,7 @@ else:
 def get_connection(module, conn_params):
     if not HAS_PYRFC_LIBRARY:
         module.fail_json(msg=missing_required_lib(
-            "python-gitlab"), exception=PYRFC_LIBRARY_IMPORT_ERROR)
+            "pyrfc"), exception=PYRFC_LIBRARY_IMPORT_ERROR)
 
     module.warn('Connecting ... %s' % conn_params['ashost'])
     if "saprouter" in conn_params:
