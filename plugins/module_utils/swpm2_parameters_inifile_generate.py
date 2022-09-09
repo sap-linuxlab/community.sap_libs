@@ -43,7 +43,7 @@ else:
     HAS_LXML_LIBRARY = True
 
 
-def debug_bs4(module: AnsibleModule):
+def debug_bs4(module):
     # Diagnose XML file parsing errors in Beautiful Soup
     # https://stackoverflow.com/questions/56942892/cannot-parse-iso-8859-15-encoded-xml-with-bs4/56947172#56947172
     if not HAS_BS4_LIBRARY:
@@ -55,7 +55,7 @@ def debug_bs4(module: AnsibleModule):
 
 
 # SWPM2 control.xml conversion to utf8
-def control_xml_utf8(filepath, module: AnsibleModule):
+def control_xml_utf8(filepath, module):
     if not HAS_LXML_LIBRARY:
         module.fail_json(msg=missing_required_lib(
             "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
@@ -75,7 +75,7 @@ def control_xml_utf8(filepath, module: AnsibleModule):
 
 
 # SWPM2 Component and Parameters extract all as CSV
-def control_xml_to_csv(filepath, module: AnsibleModule):
+def control_xml_to_csv(filepath, module):
     if not HAS_BS4_LIBRARY:
         module.fail_json(msg=missing_required_lib(
             "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
@@ -109,7 +109,8 @@ def control_xml_to_csv(filepath, module: AnsibleModule):
             component_parameter_contents_doclong_text = parameter.get_text().replace('\n', '')
             component_parameter_contents_doclong_text_quote_replacement = component_parameter_contents_doclong_text.replace(
                 '"', '\'')
-            csv_string = '"' + component_key_name_text + '","' + component_key_display_name_text + '","' + component_parameter_key_name + '","' + component_parameter_key_inifile_name + '","' + \
+            csv_string = '"' + component_key_name_text + '","' + component_key_display_name_text + '","' + \
+                component_parameter_key_name + '","' + component_parameter_key_inifile_name + '","' + \
                 component_parameter_key_access + '","' + component_parameter_key_encode + '","' + \
                 component_parameter_key_defval + '","' + \
                 component_parameter_contents_doclong_text_quote_replacement + '"'
@@ -119,7 +120,7 @@ def control_xml_to_csv(filepath, module: AnsibleModule):
 
 
 # SWPM2 Component and Parameters extract all and generate template inifile.params
-def control_xml_to_inifile_params(filepath, module: AnsibleModule):
+def control_xml_to_inifile_params(filepath, module):
     if not HAS_BS4_LIBRARY:
         module.fail_json(msg=missing_required_lib(
             "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
@@ -142,7 +143,8 @@ def control_xml_to_inifile_params(filepath, module: AnsibleModule):
     #
     # All parameters are commented-out, each hash # before the parameter is removed to activate the parameter.
     # When running SWPM in Unattended Mode, the activated parameters will create a new SWPM file in the sapinst directory.
-    # If any parameter is marked as 'encode', the plaintext value will be coverted to DES hash for this parameter in the new SWPM file (in the sapinst directory).
+    # If any parameter is marked as 'encode', the plaintext value will be coverted to DES hash
+    # for this parameter in the new SWPM file (in the sapinst directory).
     #
     # An inifile.params is otherwise obtained after running SWPM as GUI or Unattended install,
     # and will be generated for a specific Product ID (such as 'NW_ABAP_OneHost:S4HANA1809.CORE.HDB.CP').
@@ -155,7 +157,7 @@ def control_xml_to_inifile_params(filepath, module: AnsibleModule):
     ############
 
     # The folder containing all archives that have been downloaded from http://support.sap.com/swdc and are supposed to be used in this procedure
-    # archives.downloadBasket = 
+    # archives.downloadBasket =
     """
 
     inifile_output.write(inifile_params_header)
@@ -189,7 +191,7 @@ def control_xml_to_inifile_params(filepath, module: AnsibleModule):
 # SWPM2 product.catalog conversion to utf8
 
 
-def product_catalog_xml_utf8(filepath, module: AnsibleModule):
+def product_catalog_xml_utf8(filepath, module):
     if not HAS_LXML_LIBRARY:
         module.fail_json(msg=missing_required_lib(
             "lxml"), exception=LXML_LIBRARY_IMPORT_ERROR)
@@ -209,11 +211,13 @@ def product_catalog_xml_utf8(filepath, module: AnsibleModule):
         target.write(string)
 
 # SWPM2 Product Catalog entries to CSV
-# Each Product Catalog entry is part of a components group, which may have attributes = output-dir, control-file, product-dir (link to SWPM directory of param file etc)
-# Attributes possible for each entry = control-file, db, id, name, os, os-type, output-dir, ppms-component, ppms-component-release, product, product-dir, release, table
+# Each Product Catalog entry is part of a components group, which may have attributes:
+# output-dir, control-file, product-dir (link to SWPM directory of param file etc)
+# Attributes possible for each entry = control-file, db, id, name, os, os-type, output-dir,
+# ppms-component, ppms-component-release, product, product-dir, release, table
 
 
-def product_catalog_xml_to_csv(filepath, module: AnsibleModule):
+def product_catalog_xml_to_csv(filepath, module):
     if not HAS_BS4_LIBRARY:
         module.fail_json(msg=missing_required_lib(
             "bs4"), exception=BS4_LIBRARY_IMPORT_ERROR)
@@ -260,6 +264,6 @@ else:
 if control_xml_path == "":
     control_xml_path = os.getcwd()
 
-control_xml_utf8(control_xml_path)
-control_xml_to_csv(control_xml_path)
-control_xml_to_inifile_params(control_xml_path)
+control_xml_utf8(control_xml_path, AnsibleModule)
+control_xml_to_csv(control_xml_path, AnsibleModule)
+control_xml_to_inifile_params(control_xml_path, AnsibleModule)
