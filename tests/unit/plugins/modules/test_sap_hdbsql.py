@@ -6,7 +6,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.plugins.modules import hana_query
+from ansible_collections.community.sap_libs.plugins.modules import sap_hdbsql
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import (
     AnsibleExitJson,
     AnsibleFailJson,
@@ -22,20 +22,20 @@ def get_bin_path(*args, **kwargs):
     return "/usr/sap/HDB/HDB01/exe/hdbsql"
 
 
-class Testhana_query(ModuleTestCase):
-    """Main class for testing hana_query module."""
+class Testsap_hdbsql(ModuleTestCase):
+    """Main class for testing sap_hdbsql module."""
 
     def setUp(self):
         """Setup."""
-        super(Testhana_query, self).setUp()
-        self.module = hana_query
+        super(Testsap_hdbsql, self).setUp()
+        self.module = sap_hdbsql
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()
         self.addCleanup(self.mock_get_bin_path.stop)  # ensure that the patching is 'undone'
 
     def tearDown(self):
         """Teardown."""
-        super(Testhana_query, self).tearDown()
+        super(Testsap_hdbsql, self).tearDown()
 
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing."""
@@ -43,7 +43,7 @@ class Testhana_query(ModuleTestCase):
             set_module_args({})
             self.module.main()
 
-    def test_hana_query(self):
+    def test_sap_hdbsql(self):
         """Check that result is processed."""
         set_module_args({
             'sid': "HDB",
@@ -58,7 +58,7 @@ class Testhana_query(ModuleTestCase):
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
             with self.assertRaises(AnsibleExitJson) as result:
-                hana_query.main()
+                sap_hdbsql.main()
             self.assertEqual(result.exception.args[0]['query_result'], [[
                 {'username': 'testuser', 'name': 'test user'},
                 {'username': 'myuser', 'name': 'my user'},
@@ -80,7 +80,7 @@ class Testhana_query(ModuleTestCase):
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
             with self.assertRaises(AnsibleExitJson) as result:
-                hana_query.main()
+                sap_hdbsql.main()
             self.assertEqual(result.exception.args[0]['query_result'], [[
                 {'username': 'testuser', 'name': 'test user'},
                 {'username': 'myuser', 'name': 'my user'},

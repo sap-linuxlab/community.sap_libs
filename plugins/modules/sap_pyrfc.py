@@ -19,7 +19,7 @@ DOCUMENTATION = r'''
 ---
 module: sap_pyrfc
 
-short_description: This module executes rfc functions.
+short_description: Ansible Module for use of SAP PyRFC to execute SAP RFCs (Remote Function Calls) to SAP remote-enabled function modules
 
 version_added: "1.2.0"
 

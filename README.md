@@ -99,14 +99,14 @@ For some modules the below requirements are needed on the host that executes a m
 ## Included content
 
 - **Modules**:
-  - [hana_query](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/hana_query.html)
+  - [sap_hdbsql](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_hdbsql.html)
   - [sap_task_list_execute](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_task_list_execute.html)
   - [sapcar_extract](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sapcar_extract.html)
   - [sap_company](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_company.html)
   - [sap_snote](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_snote.html)
   - [sap_user](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_user.html)
   - [sap_system_facts](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_system_facts.html)
-  - [sapcontrol](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sapcontrol.html)
+  - [sap_control_exec](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_control_exec.html)
 
 ## Using this collection
 

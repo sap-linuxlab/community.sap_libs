@@ -2,14 +2,22 @@
 # -*- coding: utf-8 -*-
 
 # Copyright: (c) 2021, Rainer Leber <rainerleber@gmail.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: hana_query
-short_description: Execute SQL on HANA
+module: sap_hdbsql
+short_description: Ansible Module to execute SQL on SAP HANA
 version_added: "1.0.0"
 description: This module executes SQL statements on HANA with hdbsql.
 options:
@@ -75,14 +83,14 @@ author:
 
 EXAMPLES = r'''
 - name: Simple select query
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
     query: select user_name from users
 
 - name: RUN select query with host port
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
@@ -90,7 +98,7 @@ EXAMPLES = r'''
     query: select user_name from users
 
 - name: Run several queries
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
@@ -101,7 +109,7 @@ EXAMPLES = r'''
     autocommit: False
 
 - name: Run several queries with path
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     bin_path: "/usr/sap/HDB/HDB01/exe/hdbsql"
     instance: "01"
     password: "Test123"
@@ -112,7 +120,7 @@ EXAMPLES = r'''
     autocommit: False
 
 - name: Run several queries from file
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     password: "Test123"
@@ -122,7 +130,7 @@ EXAMPLES = r'''
     host: "localhost"
 
 - name: Run several queries from user store
-  community.sap_libs.hana_query:
+  community.sap_libs.sap_hdbsql:
     sid: "hdb"
     instance: "01"
     user: hdbstoreuser

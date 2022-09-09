@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 import mock
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.plugins.modules.system import sap_system_facts
+from ansible_collections.community.sap_libs.plugins.modules import sap_system_facts
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, ModuleTestCase
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock
 from ansible.module_utils import basic
