@@ -384,7 +384,10 @@ def main():
         result['msg'] = 'Something went wrong connecting to the SAPCONTROL SOAP API.'
         module.fail_json(**result)
 
-    returned_data = recursive_dict(conn)
+    if conn is not None:
+        returned_data = recursive_dict(conn)
+    else:
+        returned_data = conn
 
     result['changed'] = True
     result['msg'] = "Succesful execution of: " + function
