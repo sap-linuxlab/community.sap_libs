@@ -68,6 +68,9 @@ def control_xml_utf8(filepath, module):
     string = etree.tostring(root, xml_declaration=True, encoding="UTF-8",
                             pretty_print=True).decode('utf8').encode('iso-8859-1')
 
+#    string1 = etree.tostring(root, xml_declaration=True, encoding="UTF-8",
+#                            pretty_print=True).decode('utf8').encode('utf-8').strip()
+
     with open('control_utf8.xml', 'wb') as target:
         target.write(string)
 
