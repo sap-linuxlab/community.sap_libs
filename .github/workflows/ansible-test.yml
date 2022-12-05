@@ -22,7 +22,13 @@ jobs:
           - stable-2.11
           - stable-2.12
           - stable-2.13
-    runs-on: ubuntu-latest
+          - stable-2.14
+          - devel
+
+    runs-on: >-
+      ${{ contains(fromJson(
+          '["stable-2.9", "stable-2.10", "stable-2.11", "stable-2.12", "stable-2.13", "stable-2.14"]'
+      ), matrix.ansible) && 'ubuntu-20.04' || 'ubuntu-latest' }}
     steps:
 
       - name: Check out code
@@ -36,36 +42,56 @@ jobs:
         
 
   units:
-    runs-on: ubuntu-latest
+    runs-on: >-
+      ${{ contains(fromJson(
+          '["stable-2.9", "stable-2.10", "stable-2.11", "stable-2.12", "stable-2.13", "stable-2.14"]'
+      ), matrix.ansible) && 'ubuntu-20.04' || 'ubuntu-latest' }}
     name: Units (Ⓐ${{ matrix.ansible }}+py${{ matrix.python }})
     strategy:
       # As soon as the first unit test fails, cancel the others to free up the CI queue
       fail-fast: true
       matrix:
         ansible:
-          - stable-2.9 # Only if your collection supports Ansible 2.9
+          - stable-2.9
           - stable-2.10
           - stable-2.11
           - stable-2.12
           - stable-2.13
+          - stable-2.14
+          - devel
         python:
-          - 2.6
-          - 2.7
-          - 3.5
-          - 3.6
-          - 3.7
-          - 3.8
           - 3.9
-        exclude:
-          # Because ansible-test doesn't support python3.9 for Ansible 2.9
-          - ansible: stable-2.9
-            python: 3.9
-          - ansible: stable-2.13
-            python: 2.6
+          - "3.10"
+          - "3.11"
         include:
-          # Test Devel on Python 3.10 only
-          - ansible: devel
-            python: '3.10'
+          # 2.9
+          - ansible: stable-2.9
+            python: 2.7
+          - ansible: stable-2.9
+            python: 3.5
+          # 2.10
+          - ansible: stable-2.10
+            python: 3.5
+          # 2.11
+          - ansible: stable-2.11
+            python: 2.7
+          - ansible: stable-2.11
+            python: 3.6
+          # 2.12
+          - ansible: stable-2.12
+            python: 3.8
+          - ansible: stable-2.12
+            python: "3.10"
+          # 2.13
+          - ansible: stable-2.13
+            python: 3.8
+          - ansible: stable-2.13
+            python: "3.10"
+          # 2.14
+          - ansible: stable-2.14
+            python: 3.9
+          - ansible: stable-2.14
+            python: "3.11"
         
 
     steps:
