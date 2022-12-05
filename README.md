@@ -70,6 +70,7 @@ Tested Ansible versions:
 - 2.11
 - 2.12
 - 2.13
+- 2.14
 - devel
 
 Tested Python versions:
@@ -80,6 +81,8 @@ Tested Python versions:
 - 3.7
 - 3.8
 - 3.9
+- 3.10
+- 3.11
 
 Due to SAP licensing and hardware requirements, integration tests are momentarily not feasible.
 The modules are tested manually against SAP systems until we found a solution or have some

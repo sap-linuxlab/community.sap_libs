@@ -118,6 +118,7 @@ except ImportError:
     HAS_PYRFC_LIBRARY = False
     PYRFC_LIBRARY_IMPORT_ERROR = traceback.format_exc()
 else:
+    PYRFC_LIBRARY_IMPORT_ERROR = None
     HAS_PYRFC_LIBRARY = True
 
 
@@ -162,6 +163,7 @@ def main():
     try:
         conn = get_connection(module, conn_params)
         result = conn.call(function, **func_params)
+        error_msg = None
     except CommunicationError as err:
         msg = "Could not connect to server"
         error_msg = err.message
