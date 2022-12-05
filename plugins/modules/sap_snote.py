@@ -147,6 +147,7 @@ except ImportError:
     HAS_PYRFC_LIBRARY = False
     ANOTHER_LIBRARY_IMPORT_ERROR = traceback.format_exc()
 else:
+    ANOTHER_LIBRARY_IMPORT_ERROR = None
     HAS_PYRFC_LIBRARY = True
 
 

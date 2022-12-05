@@ -193,6 +193,7 @@ except ImportError:
     HAS_PYRFC_LIBRARY = False
     PYRFC_LIBRARY_IMPORT_ERROR = traceback.format_exc()
 else:
+    PYRFC_LIBRARY_IMPORT_ERROR = None
     HAS_PYRFC_LIBRARY = True
 try:
     import xmltodict
@@ -200,6 +201,7 @@ except ImportError:
     HAS_XMLTODICT_LIBRARY = False
     XMLTODICT_LIBRARY_IMPORT_ERROR = traceback.format_exc()
 else:
+    XMLTODICT_LIBRARY_IMPORT_ERROR = None
     HAS_XMLTODICT_LIBRARY = True
 
 

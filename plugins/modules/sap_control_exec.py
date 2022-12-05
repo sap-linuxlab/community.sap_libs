@@ -267,6 +267,7 @@ except ImportError:
     HAS_SUDS_LIBRARY = False
     SUDS_LIBRARY_IMPORT_ERROR = traceback.format_exc()
 else:
+    SUDS_LIBRARY_IMPORT_ERROR = None
     HAS_SUDS_LIBRARY = True
 
 
