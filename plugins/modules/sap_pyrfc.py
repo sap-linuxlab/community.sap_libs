@@ -163,6 +163,7 @@ def main():
     try:
         conn = get_connection(module, conn_params)
         result = conn.call(function, **func_params)
+        error_msg = None
     except CommunicationError as err:
         msg = "Could not connect to server"
         error_msg = err.message
