@@ -1,2 +1,0 @@
-bugfixes:
-  - fix a bug where some commands produces no output which cause to crash the module.

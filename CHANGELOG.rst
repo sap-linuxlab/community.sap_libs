@@ -5,7 +5,7 @@ Community SAP Release Notes
 .. contents:: Topics
 
 
-v1.3.0
+v1.4.0
 ======
 
 Release Summary
@@ -14,6 +14,20 @@ Release Summary
 This is the 1.3.0 minor release of the ``community.sap_libs`` collection.
 This changelog contains all changes to the modules and plugins in this collection
 that have been made after the previous release.
+
+Bugfixes
+--------
+
+- fix a bug where some commands produces no output which cause to crash the module.
+- modules - fix a "variable used before assignment" that cannot be reached but causes sanity test failures.
+
+v1.3.0
+======
+
+Release Summary
+---------------
+
+This is the 1.3.0 minor release of the ``community.sap_libs`` collection. This changelog contains all changes to the modules and plugins in this collection that have been made after the previous release.
 
 Minor Changes
 -------------
