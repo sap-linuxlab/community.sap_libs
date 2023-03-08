@@ -3,3 +3,4 @@ bugfixes:
   - fixes failures in sanity test for tests/unit/compat/builtins.py
   - fixes failures in sanity test for tests/unit/plugins/modules/test_sap_system_facts.py
   - fixes failures in sanity test for tests/unit/plugins/modules/test_sap_system_facts.py
+  - fixes pipeline warnings
