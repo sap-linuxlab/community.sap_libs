@@ -1,0 +1,5 @@
+bugfixes:
+  - fixes failures in sanity test: plugins/modules/sap_pyrfc.py
+  - fixes failures in sanity test: tests/unit/compat/builtins.py
+  - fixes failures in sanity test: tests/unit/plugins/modules/test_sap_system_facts.py
+  - fixes failures in sanity test: tests/unit/plugins/modules/test_sap_system_facts.py
