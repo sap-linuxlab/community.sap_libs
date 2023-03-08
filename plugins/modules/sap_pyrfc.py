@@ -113,7 +113,7 @@ from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ..module_utils.pyrfc_handler import get_connection
 
 try:
-    from pyrfc import ABAPApplicationError, ABAPRuntimeError, CommunicationError, Connection, LogonError
+    from pyrfc import ABAPApplicationError, ABAPRuntimeError, CommunicationError, LogonError
 except ImportError:
     HAS_PYRFC_LIBRARY = False
     PYRFC_LIBRARY_IMPORT_ERROR = traceback.format_exc()
