@@ -5,6 +5,26 @@ Community SAP Release Notes
 .. contents:: Topics
 
 
+v1.4.1
+======
+
+Release Summary
+---------------
+
+This is the 1.4.1 patch release of the ``community.sap_libs`` collection.
+This changelog contains all changes to the modules and plugins in this collection
+that have been made after the previous release.
+
+Bugfixes
+--------
+
+- fixes failures in sanity test for plugins/modules/sap_pyrfc.py
+- fixes failures in sanity test for tests/unit/compat/builtins.py
+- fixes failures in sanity test for tests/unit/plugins/modules/test_sap_system_facts.py
+- fixes failures in sanity test for tests/unit/plugins/modules/test_sap_system_facts.py
+- fixes pipeline warnings
+- sapcontrol_exec - This pr fixes problems on c(StartSystem), c(StopSystem), c(RestartSystem) which needs parameters they ca not provided by the parameters argument because of special format like c(waittimeout=1) without string quotes. This is caused by the suds module itself.
+
 v1.4.0
 ======
 

@@ -95,3 +95,22 @@ releases:
     - 1.4.0.yml
     - 22-use-before-assignment.yml
     release_date: '2022-12-05'
+  1.4.1:
+    changes:
+      bugfixes:
+      - fixes failures in sanity test for plugins/modules/sap_pyrfc.py
+      - fixes failures in sanity test for tests/unit/compat/builtins.py
+      - fixes failures in sanity test for tests/unit/plugins/modules/test_sap_system_facts.py
+      - fixes failures in sanity test for tests/unit/plugins/modules/test_sap_system_facts.py
+      - fixes pipeline warnings
+      - sapcontrol_exec - This pr fixes problems on c(StartSystem), c(StopSystem),
+        c(RestartSystem) which needs parameters they ca not provided by the parameters
+        argument because of special format like c(waittimeout=1) without string quotes.
+        This is caused by the suds module itself.
+      release_summary: This is the 1.4.1 patch release of the ``community.sap_libs``
+        collection. This changelog contains all changes to the modules and plugins
+        in this collection that have been made after the previous release. 
+    fragments:
+    - 28-fix-sapcontrol-issue.yml
+    - 29-fix-lint-issues.yml
+    release_date: '2023-03-09'

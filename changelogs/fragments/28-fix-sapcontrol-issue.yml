@@ -1,4 +1,0 @@
-bugfixes:
-  - sapcontrol_exec - This pr fixes problems on c(StartSystem), c(StopSystem), c(RestartSystem) which needs parameters
-    they ca not provided by the parameters argument because of special format like c(waittimeout=1) without string quotes. 
-    This is caused by the suds module itself.
