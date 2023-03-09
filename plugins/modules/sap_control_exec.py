@@ -324,6 +324,10 @@ def connection(hostname, port, username, password, function, parameter):
     _function = getattr(client.service, function)
     if parameter is not None:
         result = _function(parameter)
+    elif function == "StartSystem":
+        result = _function(waittimeout=0)
+    elif function == "StopSystem" or function == "RestartSystem":
+        result = _function(waittimeout=0, softtimeout=0)
     else:
         result = _function()
 
