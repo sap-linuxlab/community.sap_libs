@@ -23,6 +23,8 @@ jobs:
           - stable-2.12
           - stable-2.13
           - stable-2.14
+          - stable-2.15
+          - stable-2.16
           - devel
 
     runs-on: >-
@@ -32,7 +34,7 @@ jobs:
     steps:
 
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Perform sanity testing with ansible-test
         uses: ansible-community/ansible-test-gh-action@release/v1
@@ -58,20 +60,22 @@ jobs:
           - stable-2.12
           - stable-2.13
           - stable-2.14
+          - stable-2.15
+          - stable-2.16
           - devel
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Perform unit testing with ansible-test
         uses: ansible-community/ansible-test-gh-action@release/v1
         with:
           ansible-core-version: ${{ matrix.ansible }}
           testing-type: units
-          test-deps: >-
-            ansible.netcommon
-            ansible.utils
+          # test-deps: >-
+          #   ansible.netcommon
+          #   ansible.utils
 
 # Please consult the Readme for information on why we disabled integration tests temporarily.
 

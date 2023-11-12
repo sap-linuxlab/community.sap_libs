@@ -71,6 +71,8 @@ Tested Ansible versions:
 - 2.12
 - 2.13
 - 2.14
+- 2.15
+- 2.16
 - devel
 
 Tested Python versions:
@@ -102,14 +104,14 @@ For some modules the below requirements are needed on the host that executes a m
 ## Included content
 
 - **Modules**:
-  - [sap_hdbsql](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_hdbsql.html)
-  - [sap_task_list_execute](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_task_list_execute.html)
-  - [sapcar_extract](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sapcar_extract.html)
-  - [sap_company](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_company.html)
-  - [sap_snote](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_snote.html)
-  - [sap_user](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_user.html)
-  - [sap_system_facts](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_system_facts.html)
-  - [sap_control_exec](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_control_exec.html)
+  - [sap_hdbsql](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_hdbsql_module.html)
+  - [sap_task_list_execute](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_task_list_execute_module.html)
+  - [sapcar_extract](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sapcar_extract_module.html)
+  - [sap_company](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_company_module.html)
+  - [sap_snote](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_snote_module.html)
+  - [sap_user](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_user_module.html)
+  - [sap_system_facts](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_system_facts_module.html)
+  - [sap_control_exec](https://docs.ansible.com/ansible/latest/collections/community/sap_libs/sap_control_exec_module.html)
 
 ## Using this collection
 
