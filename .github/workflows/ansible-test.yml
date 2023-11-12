@@ -71,9 +71,9 @@ jobs:
         with:
           ansible-core-version: ${{ matrix.ansible }}
           testing-type: units
-          test-deps: >-
-            ansible.netcommon
-            ansible.utils
+          # test-deps: >-
+          #   ansible.netcommon
+          #   ansible.utils
 
 # Please consult the Readme for information on why we disabled integration tests temporarily.
 
