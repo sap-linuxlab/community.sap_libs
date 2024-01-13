@@ -80,6 +80,8 @@ ansible_facts:
 from ansible.module_utils.basic import AnsibleModule
 import os
 import re
+import time
+import subprocess
 
 
 def get_all_hana_sid():
@@ -117,11 +119,18 @@ def get_hana_nr(sids, module):
                 instance_nr = instance[-2:]
                 # check if instance number exists
                 command = [module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)]
-                command.extend(['-nr', instance_nr, '-function', 'GetProcessList'])
-                check_instance = module.run_command(command, check_rc=False)
-                # sapcontrol returns c(0 - 5) exit codes only c(1) is unavailable
-                if check_instance[0] != 1:
-                    hana_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': 'HDB', 'InstanceType': 'HANA'})
+
+                # check if returned instance_nr is a number because sapcontrol returns all if a random string is provided
+                if instance_nr.isdigit():
+                    result = get_sap_srv_status(sid, instance_nr)
+                    if result[0] <= '0':
+                        start_sap_srv(sid, instance_nr)
+
+                    command.extend(['-nr', instance_nr, '-function', 'GetProcessList'])
+                    check_instance = module.run_command(command, check_rc=False)
+                    # sapcontrol returns c(0 - 5) exit codes only c(1) is unavailable
+                    if check_instance[0] != 1:
+                        hana_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': 'HDB', 'InstanceType': 'HANA'})
     return hana_list
 
 
@@ -132,8 +141,13 @@ def get_nw_nr(sids, module):
         for instance in os.listdir('/usr/sap/' + sid):
             instance_nr = instance[-2:]
             command = [module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)]
+
             # check if returned instance_nr is a number because sapcontrol returns all if a random string is provided
             if instance_nr.isdigit():
+                result = get_sap_srv_status(sid, instance_nr)
+                if result[0] <= '0':
+                    start_sap_srv(sid, instance_nr)
+
                 command.extend(['-nr', instance_nr, '-function', 'GetInstanceProperties'])
                 check_instance = module.run_command(command, check_rc=False)
                 if check_instance[0] != 1:
@@ -145,6 +159,33 @@ def get_nw_nr(sids, module):
                             type = type_raw[:-2]
                             nw_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': get_instance_type(type), 'InstanceType': 'NW'})
     return nw_list
+
+
+def get_sap_srv_status(ins_sid, ins_nr):
+    try:
+        command = 'ps -ef | grep ' + ins_sid.upper() + ' | grep sapstartsrv | awk ' + '\'' + '{print $8}' + '\'' + ' | grep ' + ins_nr + ' | grep -v grep | wc -l '
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        process.wait()
+        stdout, stderr = process.communicate()
+        return_code = process.returncode
+        return stdout.strip(), stderr.strip(), return_code
+    except Exception as e:
+        return None, str(e), 1
+
+
+def start_sap_srv(ins_sid, ins_nr):
+    try:
+        sidadm = ins_sid.lower() + 'adm'
+        command = '/usr/sap/hostctrl/exe/sapcontrol -nr ' + ins_nr + ' -function StartService ' + ins_sid.upper()
+        sudo_command = 'su ' + sidadm +' -c ' + '"' + command + '"'
+        process = subprocess.Popen(sudo_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()
+        stdout, stderr = process.communicate()
+        return_code = process.returncode
+        time.sleep(1)
+        return stdout, stderr, return_code
+    except Exception as e:
+        return None, str(e), 1
 
 
 def get_instance_type(raw_type):
