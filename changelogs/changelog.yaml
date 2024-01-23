@@ -114,3 +114,13 @@ releases:
     - 28-fix-sapcontrol-issue.yml
     - 29-fix-lint-issues.yml
     release_date: '2023-03-09'
+  1.4.2:
+    changes:
+      bugfixes:
+      - fixes failures in sanity test for all modules
+      release_summary: This is the 1.4.2 patch release of the ``community.sap_libs``
+        collection. This changelog contains all changes to the modules and plugins
+        in this collection that have been made after the previous release. 
+    fragments:
+    - 30-fix-lint-issues.yml
+    release_date: '2024-23-01'
