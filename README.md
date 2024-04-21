@@ -65,10 +65,6 @@ Every voice is important. If you have something on your mind, create an issue or
 ## Tested with Ansible and the following Python versions
 
 Tested Ansible versions:
-- 2.9
-- 2.10
-- 2.11
-- 2.12
 - 2.13
 - 2.14
 - 2.15
@@ -76,9 +72,6 @@ Tested Ansible versions:
 - devel
 
 Tested Python versions:
-- 2.6
-- 2.7
-- 3.5
 - 3.6
 - 3.7
 - 3.8
@@ -89,6 +82,9 @@ Tested Python versions:
 Due to SAP licensing and hardware requirements, integration tests are momentarily not feasible.
 The modules are tested manually against SAP systems until we found a solution or have some
 modules where we are able to execute integration test we decided to disable these tests.
+
+The test support for Ansible versions 2.9 - 2.12 is disabled due to eol of these versions.
+The modules may work with these versions but are not tested.
 
 ## External requirements
 
