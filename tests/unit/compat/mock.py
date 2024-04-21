@@ -1,6 +1,19 @@
-# Copyright (c) 2014, Toshio Kuratomi <tkuratomi@ansible.com>
-# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
-# SPDX-License-Identifier: GPL-3.0-or-later
+# (c) 2014, Toshio Kuratomi <tkuratomi@ansible.com>
+#
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
@@ -20,12 +33,12 @@ try:
     # Allow wildcard import because we really do want to import all of mock's
     # symbols into this compat shim
     # pylint: disable=wildcard-import,unused-wildcard-import
-    from unittest.mock import *  # noqa: F401, pylint: disable=unused-import
+    from unittest.mock import *
 except ImportError:
     # Python 2
     # pylint: disable=wildcard-import,unused-wildcard-import
     try:
-        from mock import *  # noqa: F401, pylint: disable=unused-import
+        from unittest.mock import *
     except ImportError:
         print('You need the mock library installed on python2.x to run tests')
 
@@ -50,7 +63,10 @@ if sys.version_info >= (3,) and sys.version_info < (3, 4, 4):
             # emulated doesn't have a newline to end the last line  remove the
             # newline that our naive format() added
             data_as_list[-1] = data_as_list[-1][:-1]
-        yield from (line for line in data_as_list)
+
+        
+        for line in data_as_list:
+            yield line # noga: use-yield-from
 
     def mock_open(mock=None, read_data=''):
         """
@@ -78,7 +94,8 @@ if sys.version_info >= (3,) and sys.version_info < (3, 4, 4):
             if handle.readline.return_value is not None:
                 while True:
                     yield handle.readline.return_value
-            yield from (line for line in _data)
+            for line in _data:
+                yield line # noga: use-yield-from
 
         global file_spec
         if file_spec is None:
