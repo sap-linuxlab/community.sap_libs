@@ -17,19 +17,16 @@ jobs:
     strategy:
       matrix:
         ansible:
-          - stable-2.9
-          - stable-2.10
-          - stable-2.11
-          - stable-2.12
           - stable-2.13
           - stable-2.14
           - stable-2.15
           - stable-2.16
+          - stable-2.17
           - devel
 
     runs-on: >-
       ${{ contains(fromJson(
-          '["stable-2.9", "stable-2.10", "stable-2.11", "stable-2.12", "stable-2.13", "stable-2.14"]'
+          '["stable-2.13", "stable-2.14"]'
       ), matrix.ansible) && 'ubuntu-20.04' || 'ubuntu-latest' }}
     steps:
 
@@ -46,7 +43,7 @@ jobs:
   units:
     runs-on: >-
       ${{ contains(fromJson(
-          '["stable-2.9", "stable-2.10", "stable-2.11", "stable-2.12", "stable-2.13", "stable-2.14"]'
+          '["stable-2.13", "stable-2.14"]'
       ), matrix.ansible) && 'ubuntu-20.04' || 'ubuntu-latest' }}
     name: Units (Ⓐ${{ matrix.ansible }}+py${{ matrix.python }})
     strategy:
@@ -54,14 +51,11 @@ jobs:
       fail-fast: true
       matrix:
         ansible:
-          - stable-2.9
-          - stable-2.10
-          - stable-2.11
-          - stable-2.12
           - stable-2.13
           - stable-2.14
           - stable-2.15
           - stable-2.16
+          - stable-2.17
           - devel
 
     steps:
