@@ -225,18 +225,18 @@ else:
 
 
 def choices():
-    retlist = ["Start","Stop","Shutdown","InstanceStart","InstanceStop","Bootstrap","ParameterValue","GetProcessList",
-               "GetProcessList2","GetStartProfile","GetTraceFile","GetAlertTree","GetAlerts","RestartService",
-               "StopService","GetEnvironment","ListDeveloperTraces","ListLogFiles","ReadDeveloperTrace","ReadLogFile",
-               "AnalyseLogFile","ConfigureLogFileList","GetLogFileList","RestartInstance","SendSignal","GetVersionInfo",
-               "GetQueueStatistic","GetInstanceProperties","OSExecute","AnalyseLogFiles","GetAccessPointList",
-               "GetSystemInstanceList","StartSystem","StopSystem","RestartSystem","AccessCheck","GetProcessParameter",
-               "SetProcessParameter","SetProcessParameter2","ShmDetach","CreateSnapshot","ReadSnapshot","ListSnapshots",
-               "DeleteSnapshots","RequestLogonFile","GetNetworkId","GetSecNetworkId","UpdateSystem","GetSystemUpdateList",
-               "UpdateSCSInstance","ABAPReadSyslog","ABAPReadRawSyslog","ABAPGetWPTable","ABAPAcknoledgeAlerts",
-               "CMGetThreadList","ICMGetConnectionList","ICMGetCacheEntries","ICMGetProxyConnectionList",
-               "WebDispGetServerList","WebDispGetGroupList","WebDispGetVirtHostList","WebDispGeUrlPrefixList",
-               "EnqGetLockTable","EnqRemoveLocks","EnqGetStatistic"]
+    retlist = ["Start", "Stop", "Shutdown", "InstanceStart", "InstanceStop", "Bootstrap", "ParameterValue", "GetProcessList", 
+               "GetProcessList2", "GetStartProfile", "GetTraceFile", "GetAlertTree", "GetAlerts", "RestartService", 
+               "StopService", "GetEnvironment", "ListDeveloperTraces", "ListLogFiles", "ReadDeveloperTrace", "ReadLogFile", 
+               "AnalyseLogFile", "ConfigureLogFileList", "GetLogFileList", "RestartInstance", "SendSignal", "GetVersionInfo", 
+               "GetQueueStatistic", "GetInstanceProperties", "OSExecute", "AnalyseLogFiles", "GetAccessPointList", 
+               "GetSystemInstanceList", "StartSystem", "StopSystem", "RestartSystem", "AccessCheck", "GetProcessParameter", 
+               "SetProcessParameter", "SetProcessParameter2", "ShmDetach", "CreateSnapshot", "ReadSnapshot", "ListSnapshots", 
+               "DeleteSnapshots", "RequestLogonFile", "GetNetworkId", "GetSecNetworkId", "UpdateSystem", "GetSystemUpdateList", 
+               "UpdateSCSInstance", "ABAPReadSyslog", "ABAPReadRawSyslog", "ABAPGetWPTable", "ABAPAcknoledgeAlerts", 
+               "CMGetThreadList", "ICMGetConnectionList", "ICMGetCacheEntries", "ICMGetProxyConnectionList", 
+               "WebDispGetServerList", "WebDispGetGroupList", "WebDispGetVirtHostList", "WebDispGeUrlPrefixList", 
+               "EnqGetLockTable", "EnqRemoveLocks", "EnqGetStatistic"]
     return retlist
 
 
