@@ -21,8 +21,6 @@ jobs:
     strategy:
       matrix:
         ansible:
-          - stable-2.13
-          - stable-2.14
           - stable-2.15
           - stable-2.16
           - stable-2.17
@@ -57,10 +55,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - ansible: stable-2.13
-            python: '3.9'
-          - ansible: stable-2.14
-            python: '3.10'
           - ansible: stable-2.15
             python: '3.11'
           - ansible: stable-2.16
@@ -79,11 +73,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
       - name: Perform unit testing
         uses: ansible-community/ansible-test-gh-action@release/v1
         with:
           ansible-core-version: ${{ matrix.ansible }}
-          python-version: ${{ matrix.python }}
           testing-type: units
 
 # Please consult the Readme for information on why we disabled integration tests temporarily.
