@@ -33,10 +33,6 @@ class Testsap_hdbsql(ModuleTestCase):
         self.mock_get_bin_path.start()
         self.addCleanup(self.mock_get_bin_path.stop)  # ensure that the patching is 'undone'
 
-    def tearDown(self):
-        """Teardown."""
-        super(Testsap_hdbsql, self).tearDown()
-
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing."""
         with self.assertRaises(AnsibleFailJson):

@@ -19,6 +19,9 @@ def set_module_args(args):
 
     args = json.dumps({'ANSIBLE_MODULE_ARGS': args})
     basic._ANSIBLE_ARGS = to_bytes(args)
+    # ansible-core 2.19+ requires profile to be set.
+    # Exception: No serialization profile was specified.
+    basic._ANSIBLE_PROFILE = 'posix'
 
 
 class AnsibleExitJson(Exception):

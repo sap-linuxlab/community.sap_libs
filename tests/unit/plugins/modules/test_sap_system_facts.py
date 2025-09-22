@@ -29,10 +29,6 @@ class Testsap_system_facts(ModuleTestCase):
         self.mock_get_bin_path.start()
         self.addCleanup(self.mock_get_bin_path.stop)
 
-    def tearDown(self):
-        """Teardown."""
-        super(Testsap_system_facts, self).tearDown()
-
     def test_no_systems_available(self):
         """No SAP Systems"""
         with self.assertRaises(AnsibleExitJson) as result:
