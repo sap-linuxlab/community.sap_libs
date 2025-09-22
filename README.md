@@ -65,6 +65,7 @@ Every voice is important. If you have something on your mind, create an issue or
 ## Tested with Ansible and the following Python versions
 
 Tested Ansible versions:
+- 2.15
 - 2.16
 - 2.17
 - 2.18
@@ -72,8 +73,6 @@ Tested Ansible versions:
 - devel
 
 Tested Python versions:
-- 3.9
-- 3.10
 - 3.11
 - 3.12
 - 3.13

@@ -73,15 +73,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-
       - name: Perform unit testing
         uses: ansible-community/ansible-test-gh-action@release/v1
         with:
           ansible-core-version: ${{ matrix.ansible }}
+          target-python-version: ${{ matrix.python }}
           testing-type: units
 
 # Please consult the Readme for information on why we disabled integration tests temporarily.
