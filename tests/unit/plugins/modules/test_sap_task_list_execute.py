@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import sys
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
@@ -11,15 +12,18 @@ class TestSAPRfcModule(ModuleTestCase):
 
     def setUp(self):
         super(TestSAPRfcModule, self).setUp()
-        self.mock_modules = {
-            'pyrfc': MagicMock(),
-            'pyrfc.Connection': MagicMock(),
-            'xmltodict': MagicMock(),
-            'xmltodict.parse': MagicMock()
-        }
-        patcher = patch.dict('sys.modules', self.mock_modules)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        sys.modules['pyrfc'] = MagicMock()
+        sys.modules['pyrfc.Connection'] = MagicMock()
+        sys.modules['xmltodict'] = MagicMock()
+        sys.modules['xmltodict.parse'] = MagicMock()
+
+        def cleanup_mocks():
+            del sys.modules['pyrfc']
+            del sys.modules['pyrfc.Connection']
+            del sys.modules['xmltodict']
+            del sys.modules['xmltodict.parse']
+        self.addCleanup(cleanup_mocks)
+
         from ansible_collections.community.sap_libs.plugins.modules import sap_task_list_execute
         self.module = sap_task_list_execute
 

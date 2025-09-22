@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import sys
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
@@ -11,14 +12,16 @@ class TestSapcontrolModule(ModuleTestCase):
 
     def setUp(self):
         super(TestSapcontrolModule, self).setUp()
-        self.suds_mock = {
-            'suds.client': MagicMock(),
-            'suds.sudsobject': MagicMock(),
-            'suds': MagicMock()
-        }
-        patcher = patch.dict('sys.modules', self.suds_mock)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        sys.modules['suds.client'] = MagicMock()
+        sys.modules['suds.sudsobject'] = MagicMock()
+        sys.modules['suds'] = MagicMock()
+
+        def cleanup_suds():
+            del sys.modules['suds.client']
+            del sys.modules['suds.sudsobject']
+            del sys.modules['suds']
+        self.addCleanup(cleanup_suds)
+
         from ansible_collections.community.sap_libs.plugins.modules import sap_control_exec
         self.module = sap_control_exec
 
