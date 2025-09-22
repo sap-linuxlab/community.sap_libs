@@ -1,6 +1,7 @@
-# (c) 2012-2014, Michael DeHaan <michael.dehaan@gmail.com>
+# Copyright (c) 2012-2014, Michael DeHaan <michael.dehaan@gmail.com>
 #
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -16,7 +17,7 @@ class DictDataLoader(DataLoader):
 
     def __init__(self, file_mapping=None):
         file_mapping = {} if file_mapping is None else file_mapping
-        assert type(file_mapping) == dict
+        assert isinstance(file_mapping, dict)
 
         super(DictDataLoader, self).__init__()
 

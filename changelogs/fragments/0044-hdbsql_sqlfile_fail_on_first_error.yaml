@@ -1,0 +1,2 @@
+minor_changes:
+  - Add -E 3 Option to hdbsql run, if filepaht is selected, to fail on first sql error
