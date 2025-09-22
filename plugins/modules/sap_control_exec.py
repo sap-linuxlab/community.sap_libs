@@ -62,116 +62,69 @@ options:
         choices:
         - Start
         - Stop
-        - RestartInstance
         - Shutdown
         - InstanceStart
-        - GetProcessList
-        - Bootstrap
         - InstanceStop
-        - StopService
-        - StartService
-        - RestartService
+        - Bootstrap
         - ParameterValue
+        - GetProcessList
+        - GetProcessList2
         - GetStartProfile
         - GetTraceFile
         - GetAlertTree
         - GetAlerts
+        - RestartService
+        - StopService
         - GetEnvironment
+        - ListDeveloperTraces
+        - ListLogFiles
+        - ReadDeveloperTrace
+        - ReadLogFile
+        - AnalyseLogFile
+        - ConfigureLogFileList
+        - GetLogFileList
+        - RestartInstance
+        - SendSignal
         - GetVersionInfo
         - GetQueueStatistic
         - GetInstanceProperties
-        - ListDeveloperTraces
-        - ReadDeveloperTrace
-        - ListLogFiles
-        - ReadLogFile
-        - AnalyseLogFiles
-        - ConfigureLogFileList
-        - GetLogFileList
-        - CreateSnapshot
-        - ReadSnapshot
-        - ListSnapshots
-        - DeleteSnapshots
-        - GetAccessPointList
-        - GetProcessParameter
-        - SetProcessParameter
-        - SetProcessParameter2
-        - CheckParameter
         - OSExecute
-        - SendSignal
-        - GetCallstack
+        - AnalyseLogFiles
+        - GetAccessPointList
         - GetSystemInstanceList
         - StartSystem
         - StopSystem
         - RestartSystem
-        - GetSystemUpdateList
-        - UpdateSystem
-        - UpdateSCSInstance
-        - CheckUpdateSystem
         - AccessCheck
-        - GetSecNetworkId
-        - GetNetworkId
+        - GetProcessParameter
+        - SetProcessParameter
+        - SetProcessParameter2
+        - ShmDetach
+        - CreateSnapshot
+        - ReadSnapshot
+        - ListSnapshots
+        - DeleteSnapshots
         - RequestLogonFile
-        - UpdateSystemPKI
-        - UpdateInstancePSE
-        - StorePSE
-        - DeletePSE
-        - CheckPSE
-        - CreatePSECredential
-        - HACheckConfig
-        - HACheckFailoverConfig
-        - HAGetFailoverConfig
-        - HAFailoverToNode
-        - HASetMaintenanceMode
-        - HACheckMaintenanceMode
+        - GetNetworkId
+        - GetSecNetworkId
+        - UpdateSystem
+        - GetSystemUpdateList
+        - UpdateSCSInstance
         - ABAPReadSyslog
         - ABAPReadRawSyslog
         - ABAPGetWPTable
-        - ABAPGetComponentList
-        - ABAPCheckRFCDestinations
-        - ABAPGetSystemWPTable
-        - J2EEControlProcess
-        - J2EEControlCluster
-        - J2EEEnableDbgSession
-        - J2EEDisableDbgSession
-        - J2EEGetProcessList
-        - J2EEGetProcessList2
-        - J2EEGetThreadList
-        - J2EEGetThreadList2
-        - J2EEGetThreadCallStack
-        - J2EEGetThreadTaskStack
-        - J2EEGetSessionList
-        - J2EEGetCacheStatistic
-        - J2EEGetCacheStatistic2
-        - J2EEGetApplicationAliasList
-        - J2EEGetComponentList
-        - J2EEControlComponents
-        - J2EEGetWebSessionList
-        - J2EEGetWebSessionList2
-        - J2EEGetEJBSessionList
-        - J2EEGetRemoteObjectList
-        - J2EEGetVMGCHistory
-        - J2EEGetVMGCHistory2
-        - J2EEGetVMHeapInfo
-        - J2EEGetClusterMsgList
-        - J2EEGetSharedTableInfo
-        - ICMGetThreadList
+        - ABAPAcknoledgeAlerts
+        - CMGetThreadList
         - ICMGetConnectionList
-        - ICMGetProxyConnectionList
         - ICMGetCacheEntries
+        - ICMGetProxyConnectionList
         - WebDispGetServerList
         - WebDispGetGroupList
         - WebDispGetVirtHostList
-        - WebDispGetUrlPrefixList
-        - EnqGetStatistic
+        - WebDispGeUrlPrefixList
         - EnqGetLockTable
-        - EnqRemoveUserLocks
-        - StartWait
-        - StopWait
-        - WaitforStarted
-        - WaitforStopped
-        - RestartServiceWait
-        - WaitforServiceStarted
-        - CheckHostAgent
+        - EnqRemoveLocks
+        - EnqGetStatistic
         type: str
     parameter:
         description:
@@ -272,29 +225,18 @@ else:
 
 
 def choices():
-    retlist = ["Start", "Stop", "RestartInstance", "Shutdown", "InstanceStart", 'GetProcessList',
-               'Bootstrap', 'InstanceStop', 'StopService', 'StartService', 'RestartService', 'ParameterValue',
-               'GetStartProfile', 'GetTraceFile', 'GetAlertTree', 'GetAlerts', 'GetEnvironment', 'GetVersionInfo',
-               'GetQueueStatistic', 'GetInstanceProperties', 'ListDeveloperTraces', 'ReadDeveloperTrace',
-               'ListLogFiles', 'ReadLogFile', 'AnalyseLogFiles', 'ConfigureLogFileList', 'GetLogFileList', 'CreateSnapshot', 'ReadSnapshot',
-               'ListSnapshots', 'DeleteSnapshots', 'GetAccessPointList', 'GetProcessParameter', 'SetProcessParameter',
-               'SetProcessParameter2', 'CheckParameter', 'OSExecute', 'SendSignal', 'GetCallstack', 'GetSystemInstanceList',
-               'StartSystem', 'StopSystem', 'RestartSystem', 'GetSystemUpdateList', 'UpdateSystem', 'UpdateSCSInstance',
-               'CheckUpdateSystem', 'AccessCheck', 'GetSecNetworkId', 'GetNetworkId', 'RequestLogonFile',
-               'UpdateSystemPKI', 'UpdateInstancePSE', 'StorePSE', 'DeletePSE', 'CheckPSE', 'CreatePSECredential',
-               'HACheckConfig', 'HACheckFailoverConfig', 'HAGetFailoverConfig', 'HAFailoverToNode',
-               'HASetMaintenanceMode', 'HACheckMaintenanceMode', 'ABAPReadSyslog', 'ABAPReadRawSyslog',
-               'ABAPGetWPTable', 'ABAPGetComponentList', 'ABAPCheckRFCDestinations',
-               'ABAPGetSystemWPTable', 'J2EEControlProcess', 'J2EEControlCluster', 'J2EEEnableDbgSession',
-               'J2EEDisableDbgSession', 'J2EEGetProcessList', 'J2EEGetProcessList2', 'J2EEGetThreadList', 'J2EEGetThreadList2',
-               'J2EEGetThreadCallStack', 'J2EEGetThreadTaskStack', 'J2EEGetSessionList', 'J2EEGetCacheStatistic',
-               'J2EEGetCacheStatistic2', 'J2EEGetApplicationAliasList', 'J2EEGetComponentList',
-               'J2EEControlComponents', 'J2EEGetWebSessionList', 'J2EEGetWebSessionList2', 'J2EEGetEJBSessionList', 'J2EEGetRemoteObjectList',
-               'J2EEGetVMGCHistory', 'J2EEGetVMGCHistory2', 'J2EEGetVMHeapInfo', 'J2EEGetClusterMsgList', 'J2EEGetSharedTableInfo',
-               'ICMGetThreadList', 'ICMGetConnectionList', 'ICMGetProxyConnectionList', 'ICMGetCacheEntries', 'WebDispGetServerList',
-               'WebDispGetGroupList', 'WebDispGetVirtHostList', 'WebDispGetUrlPrefixList', 'EnqGetStatistic', 'EnqGetLockTable',
-               'EnqRemoveUserLocks', 'StartWait', 'StopWait', 'WaitforStarted', 'WaitforStopped', 'RestartServiceWait',
-               'WaitforServiceStarted', 'CheckHostAgent']
+    retlist = ["Start", "Stop", "Shutdown", "InstanceStart", "InstanceStop", "Bootstrap", "ParameterValue", "GetProcessList",
+               "GetProcessList2", "GetStartProfile", "GetTraceFile", "GetAlertTree", "GetAlerts", "RestartService",
+               "StopService", "GetEnvironment", "ListDeveloperTraces", "ListLogFiles", "ReadDeveloperTrace", "ReadLogFile",
+               "AnalyseLogFile", "ConfigureLogFileList", "GetLogFileList", "RestartInstance", "SendSignal", "GetVersionInfo",
+               "GetQueueStatistic", "GetInstanceProperties", "OSExecute", "AnalyseLogFiles", "GetAccessPointList",
+               "GetSystemInstanceList", "StartSystem", "StopSystem", "RestartSystem", "AccessCheck", "GetProcessParameter",
+               "SetProcessParameter", "SetProcessParameter2", "ShmDetach", "CreateSnapshot", "ReadSnapshot", "ListSnapshots",
+               "DeleteSnapshots", "RequestLogonFile", "GetNetworkId", "GetSecNetworkId", "UpdateSystem", "GetSystemUpdateList",
+               "UpdateSCSInstance", "ABAPReadSyslog", "ABAPReadRawSyslog", "ABAPGetWPTable", "ABAPAcknoledgeAlerts",
+               "CMGetThreadList", "ICMGetConnectionList", "ICMGetCacheEntries", "ICMGetProxyConnectionList",
+               "WebDispGetServerList", "WebDispGetGroupList", "WebDispGetVirtHostList", "WebDispGeUrlPrefixList",
+               "EnqGetLockTable", "EnqRemoveLocks", "EnqGetStatistic"]
     return retlist
 
 
