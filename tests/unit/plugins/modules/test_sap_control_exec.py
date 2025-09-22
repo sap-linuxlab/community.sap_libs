@@ -7,20 +7,23 @@ import sys
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-sys.modules['suds.client'] = MagicMock()
-sys.modules['suds.sudsobject'] = MagicMock()
-sys.modules['suds'] = MagicMock()
-
-from ansible_collections.community.sap_libs.plugins.modules import sap_control_exec
-
 
 class TestSapcontrolModule(ModuleTestCase):
 
     def setUp(self):
+        self.suds_mock = {
+            'suds.client': MagicMock(),
+            'suds.sudsobject': MagicMock(),
+            'suds': MagicMock()
+        }
+        self.patcher = patch.dict('sys.modules', self.suds_mock)
+        self.patcher.start()
         super(TestSapcontrolModule, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sap_control_exec
         self.module = sap_control_exec
 
     def tearDown(self):
+        self.patcher.stop()
         super(TestSapcontrolModule, self).tearDown()
 
     def define_rfc_connect(self, mocker):

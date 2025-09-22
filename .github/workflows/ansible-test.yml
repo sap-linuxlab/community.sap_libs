@@ -10,6 +10,7 @@ on:
   # This ensures that even if there haven't been commits that we are still testing against latest version of ansible-test for each ansible-base version
   schedule:
     - cron: '0 6 * * *'
+  workflow_dispatch:
 env:
   NAMESPACE: community
   COLLECTION_NAME: sap_libs

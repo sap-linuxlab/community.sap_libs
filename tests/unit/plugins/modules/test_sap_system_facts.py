@@ -7,7 +7,6 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.plugins.modules import sap_system_facts
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, ModuleTestCase
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
 from ansible.module_utils import basic
@@ -24,6 +23,7 @@ class Testsap_system_facts(ModuleTestCase):
     def setUp(self):
         """Setup."""
         super(Testsap_system_facts, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sap_system_facts
         self.module = sap_system_facts
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()

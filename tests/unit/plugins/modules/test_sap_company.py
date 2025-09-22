@@ -7,19 +7,22 @@ import sys
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-sys.modules['pyrfc'] = MagicMock()
-sys.modules['pyrfc.Connection'] = MagicMock()
-
-from ansible_collections.community.sap_libs.plugins.modules import sap_company
-
 
 class TestSAPRfcModule(ModuleTestCase):
 
     def setUp(self):
+        self.pyrfc_mock = {
+            'pyrfc': MagicMock(),
+            'pyrfc.Connection': MagicMock()
+        }
+        self.patcher = patch.dict('sys.modules', self.pyrfc_mock)
+        self.patcher.start()
         super(TestSAPRfcModule, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sap_company
         self.module = sap_company
 
     def tearDown(self):
+        self.patcher.stop()
         super(TestSAPRfcModule, self).tearDown()
 
     def define_rfc_connect(self, mocker):
@@ -56,7 +59,7 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'E'}]}
 
             with self.assertRaises(AnsibleFailJson) as result:
-                sap_company.main()
+                self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Something went wrong')
 
     def test_success(self):
@@ -84,7 +87,7 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_company.main()
+                self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Company address COMP_ID created')
 
     def test_no_changes(self):
@@ -112,7 +115,7 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_company.main()
+                self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'No changes where made.')
 
     def test_absent(self):
@@ -132,5 +135,5 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_company.main()
+                self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Company address COMP_ID deleted')

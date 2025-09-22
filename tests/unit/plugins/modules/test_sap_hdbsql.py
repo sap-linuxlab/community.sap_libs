@@ -6,7 +6,6 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.plugins.modules import sap_hdbsql
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import (
     AnsibleExitJson,
     AnsibleFailJson,
@@ -28,6 +27,7 @@ class Testsap_hdbsql(ModuleTestCase):
     def setUp(self):
         """Setup."""
         super(Testsap_hdbsql, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sap_hdbsql
         self.module = sap_hdbsql
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()
@@ -58,7 +58,7 @@ class Testsap_hdbsql(ModuleTestCase):
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_hdbsql.main()
+                self.module.main()
             self.assertEqual(result.exception.args[0]['query_result'], [[
                 {'username': 'testuser', 'name': 'test user'},
                 {'username': 'myuser', 'name': 'my user'},
@@ -80,7 +80,7 @@ class Testsap_hdbsql(ModuleTestCase):
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_hdbsql.main()
+                self.module.main()
             self.assertEqual(result.exception.args[0]['query_result'], [[
                 {'username': 'testuser', 'name': 'test user'},
                 {'username': 'myuser', 'name': 'my user'},

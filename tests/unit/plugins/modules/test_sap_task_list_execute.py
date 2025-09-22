@@ -7,21 +7,24 @@ import sys
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-sys.modules['pyrfc'] = MagicMock()
-sys.modules['pyrfc.Connection'] = MagicMock()
-sys.modules['xmltodict'] = MagicMock()
-sys.modules['xmltodict.parse'] = MagicMock()
-
-from ansible_collections.community.sap_libs.plugins.modules import sap_task_list_execute
-
 
 class TestSAPRfcModule(ModuleTestCase):
 
     def setUp(self):
+        self.mock_modules = {
+            'pyrfc': MagicMock(),
+            'pyrfc.Connection': MagicMock(),
+            'xmltodict': MagicMock(),
+            'xmltodict.parse': MagicMock()
+        }
+        self.patcher = patch.dict('sys.modules', self.mock_modules)
+        self.patcher.start()
         super(TestSAPRfcModule, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sap_task_list_execute
         self.module = sap_task_list_execute
 
     def tearDown(self):
+        self.patcher.stop()
         super(TestSAPRfcModule, self).tearDown()
 
     def define_rfc_connect(self, mocker):
@@ -66,7 +69,7 @@ class TestSAPRfcModule(ModuleTestCase):
                                                    'ACTION_MAINTAIN': None}}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_task_list_execute.main()
+                self.module.main()
         self.assertEqual(result.exception.args[0]['out'], {'item': [{'TASK': {'CHECK_STATUS_DESCR': 'Check successfully',
                                                                               'STATUS_DESCR': 'Executed successfully', 'TASKNAME': 'CL_STCT_CHECK_SEC_CRYPTO',
                                                                               'LNR': '1', 'DESCRIPTION': 'Check SAP Cryptographic Library', 'DOCU_EXIST': 'X',
@@ -85,5 +88,5 @@ class TestSAPRfcModule(ModuleTestCase):
         with patch.object(self.module, 'xml_to_dict') as XML:
             XML.return_value = "No logs available."
             with self.assertRaises(AnsibleExitJson) as result:
-                sap_task_list_execute.main()
+                self.module.main()
         self.assertEqual(result.exception.args[0]['out'], 'No logs available.')

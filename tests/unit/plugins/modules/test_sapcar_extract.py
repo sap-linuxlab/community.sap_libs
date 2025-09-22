@@ -6,7 +6,6 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.plugins.modules import sapcar_extract
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
 from ansible.module_utils import basic
@@ -23,6 +22,7 @@ class Testsapcar_extract(ModuleTestCase):
     def setUp(self):
         """Setup."""
         super(Testsapcar_extract, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sapcar_extract
         self.module = sapcar_extract
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()
@@ -48,6 +48,6 @@ class Testsapcar_extract(ModuleTestCase):
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, '', ''  # successful execution, no output
             with self.assertRaises(AnsibleExitJson) as result:
-                sapcar_extract.main()
+                self.module.main()
                 self.assertTrue(result.exception.args[0]['changed'])
         self.assertEqual(run_command.call_count, 1)

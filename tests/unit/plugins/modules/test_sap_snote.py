@@ -7,19 +7,22 @@ import sys
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-sys.modules['pyrfc'] = MagicMock()
-sys.modules['pyrfc.Connection'] = MagicMock()
-
-from ansible_collections.community.sap_libs.plugins.modules import sap_snote
-
 
 class TestSAPRfcModule(ModuleTestCase):
 
     def setUp(self):
+        self.pyrfc_mock = {
+            'pyrfc': MagicMock(),
+            'pyrfc.Connection': MagicMock()
+        }
+        self.patcher = patch.dict('sys.modules', self.pyrfc_mock)
+        self.patcher.start()
         super(TestSAPRfcModule, self).setUp()
+        from ansible_collections.community.sap_libs.plugins.modules import sap_snote
         self.module = sap_snote
 
     def tearDown(self):
+        self.patcher.stop()
         super(TestSAPRfcModule, self).tearDown()
 
     def define_rfc_connect(self, mocker):
