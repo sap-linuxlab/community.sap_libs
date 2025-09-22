@@ -15,18 +15,12 @@ class TestSapcontrolModule(ModuleTestCase):
             'suds.sudsobject': MagicMock(),
             'suds': MagicMock()
         }
-        self.patcher = patch.dict('sys.modules', self.suds_mock)
-        self.patcher.start()
+        patcher = patch.dict('sys.modules', self.suds_mock)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         super(TestSapcontrolModule, self).setUp()
         from ansible_collections.community.sap_libs.plugins.modules import sap_control_exec
         self.module = sap_control_exec
-
-    def tearDown(self):
-        self.patcher.stop()
-        super(TestSapcontrolModule, self).tearDown()
-
-    def define_rfc_connect(self, mocker):
-        return mocker.patch(self.module.call_rfc_method)
 
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""

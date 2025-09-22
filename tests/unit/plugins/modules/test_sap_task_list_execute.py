@@ -16,18 +16,12 @@ class TestSAPRfcModule(ModuleTestCase):
             'xmltodict': MagicMock(),
             'xmltodict.parse': MagicMock()
         }
-        self.patcher = patch.dict('sys.modules', self.mock_modules)
-        self.patcher.start()
+        patcher = patch.dict('sys.modules', self.mock_modules)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         super(TestSAPRfcModule, self).setUp()
         from ansible_collections.community.sap_libs.plugins.modules import sap_task_list_execute
         self.module = sap_task_list_execute
-
-    def tearDown(self):
-        self.patcher.stop()
-        super(TestSAPRfcModule, self).tearDown()
-
-    def define_rfc_connect(self, mocker):
-        return mocker.patch(self.module.call_rfc_method)
 
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""

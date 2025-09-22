@@ -14,18 +14,12 @@ class TestSAPRfcModule(ModuleTestCase):
             'pyrfc': MagicMock(),
             'pyrfc.Connection': MagicMock()
         }
-        self.patcher = patch.dict('sys.modules', self.pyrfc_mock)
-        self.patcher.start()
+        patcher = patch.dict('sys.modules', self.pyrfc_mock)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         super(TestSAPRfcModule, self).setUp()
         from ansible_collections.community.sap_libs.plugins.modules import sap_company
         self.module = sap_company
-
-    def tearDown(self):
-        self.patcher.stop()
-        super(TestSAPRfcModule, self).tearDown()
-
-    def define_rfc_connect(self, mocker):
-        return mocker.patch(self.module.call_rfc_method)
 
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""
