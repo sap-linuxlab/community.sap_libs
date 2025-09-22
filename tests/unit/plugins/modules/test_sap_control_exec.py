@@ -10,6 +10,7 @@ from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils imp
 class TestSapcontrolModule(ModuleTestCase):
 
     def setUp(self):
+        super(TestSapcontrolModule, self).setUp()
         self.suds_mock = {
             'suds.client': MagicMock(),
             'suds.sudsobject': MagicMock(),
@@ -18,7 +19,6 @@ class TestSapcontrolModule(ModuleTestCase):
         patcher = patch.dict('sys.modules', self.suds_mock)
         patcher.start()
         self.addCleanup(patcher.stop)
-        super(TestSapcontrolModule, self).setUp()
         from ansible_collections.community.sap_libs.plugins.modules import sap_control_exec
         self.module = sap_control_exec
 

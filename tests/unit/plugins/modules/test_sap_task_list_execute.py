@@ -10,6 +10,7 @@ from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils imp
 class TestSAPRfcModule(ModuleTestCase):
 
     def setUp(self):
+        super(TestSAPRfcModule, self).setUp()
         self.mock_modules = {
             'pyrfc': MagicMock(),
             'pyrfc.Connection': MagicMock(),
@@ -19,7 +20,6 @@ class TestSAPRfcModule(ModuleTestCase):
         patcher = patch.dict('sys.modules', self.mock_modules)
         patcher.start()
         self.addCleanup(patcher.stop)
-        super(TestSAPRfcModule, self).setUp()
         from ansible_collections.community.sap_libs.plugins.modules import sap_task_list_execute
         self.module = sap_task_list_execute
 
