@@ -17,23 +17,19 @@ env:
 
 jobs:
   sanity:
+    runs-on: ubuntu-latest
     name: Sanity (Ⓐ${{ matrix.ansible }})
     strategy:
+      fail-fast: false  # Disabled so we can see all failed combinations.
       matrix:
         ansible:
-          - stable-2.15
-          - stable-2.16
-          - stable-2.17
-          - stable-2.18
-          - stable-2.19
-          - devel
+          - 'stable-2.16'
+          - 'stable-2.17'
+          - 'stable-2.18'
+          - 'stable-2.19'
+          - 'devel'  # Currently 2.20
 
-    runs-on: >-
-      ${{ contains(fromJson(
-          '["stable-2.13", "stable-2.14"]'
-      ), matrix.ansible) && 'ubuntu-20.04' || 'ubuntu-latest' }}
     steps:
-
       - name: Check out code
         uses: actions/checkout@v4
 
@@ -42,28 +38,27 @@ jobs:
         with:
           ansible-core-version: ${{ matrix.ansible }}
           testing-type: sanity
-        
 
   units:
-    runs-on: >-
-      ${{ contains(fromJson(
-          '["stable-2.13", "stable-2.14"]'
-      ), matrix.ansible) && 'ubuntu-20.04' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     name: Units (Ⓐ${{ matrix.ansible }}+py${{ matrix.python }})
     strategy:
-      # As soon as the first unit test fails, cancel the others to free up the CI queue
-      fail-fast: true
+      fail-fast: false  # Disabled so we can see all failed combinations.
       matrix:
         ansible:
-          - stable-2.15
-          - stable-2.16
-          - stable-2.17
-          - stable-2.18
-          - stable-2.19
-          - devel
+          - 'stable-2.16'
+          - 'stable-2.17'
+          - 'stable-2.18'
+          - 'stable-2.19'
+          - 'devel'  # Currently 2.20
+        python:
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
 
     steps:
-
       - name: Check out code
         uses: actions/checkout@v4
 
@@ -71,6 +66,7 @@ jobs:
         uses: ansible-community/ansible-test-gh-action@release/v1
         with:
           ansible-core-version: ${{ matrix.ansible }}
+          target-python-version: ${{ matrix.python }}
           testing-type: units
 
 # Please consult the Readme for information on why we disabled integration tests temporarily.
