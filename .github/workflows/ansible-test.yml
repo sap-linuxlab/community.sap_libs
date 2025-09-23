@@ -23,6 +23,8 @@ jobs:
       fail-fast: false  # Disabled so we can see all failed combinations.
       matrix:
         ansible:
+          - 'stable-2.14'
+          - 'stable-2.15'
           - 'stable-2.16'
           - 'stable-2.17'
           - 'stable-2.18'
@@ -46,6 +48,8 @@ jobs:
       fail-fast: false  # Disabled so we can see all failed combinations.
       matrix:
         ansible:
+          - 'stable-2.14'
+          - 'stable-2.15'
           - 'stable-2.16'
           - 'stable-2.17'
           - 'stable-2.18'
@@ -58,9 +62,23 @@ jobs:
           - '3.12'
           - '3.13'
         exclude:
-          # Exclude new python versions for older ansible versions
+          # Exclusions for stable-2.14
+          - ansible: 'stable-2.14'
+            python: '3.12'
+          - ansible: 'stable-2.14'
+            python: '3.13'
+
+          # Exclusions for stable-2.15
+          - ansible: 'stable-2.15'
+            python: '3.12'
+          - ansible: 'stable-2.15'
+            python: '3.13'
+
+          # Exclusions for stable-2.16
           - ansible: 'stable-2.16'
             python: '3.13'
+
+          # Exclusions for stable-2.17
           - ansible: 'stable-2.17'
             python: '3.13'
 
