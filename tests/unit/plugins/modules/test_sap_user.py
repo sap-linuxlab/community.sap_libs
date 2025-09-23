@@ -26,13 +26,13 @@ class TestSAPRfcModule(ModuleTestCase):
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({})
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
 
     def test_error_user_create(self):
         """test fail to create user"""
 
-        set_module_args({
+        args = {
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
@@ -43,7 +43,7 @@ class TestSAPRfcModule(ModuleTestCase):
             "password": "Test123456",
             "useralias": "ADMIN",
             "company": "DEFAULT_COMPANY"
-        })
+        }
 
         with patch.object(self.module, 'check_user') as check:
             check.return_value = False
@@ -55,13 +55,14 @@ class TestSAPRfcModule(ModuleTestCase):
                                                 'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'E'}]}
 
                 with self.assertRaises(AnsibleFailJson) as result:
-                    self.module.main()
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Something went wrong')
 
     def test_success(self):
         """test execute user create success"""
 
-        set_module_args({
+        args = {
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
@@ -72,7 +73,7 @@ class TestSAPRfcModule(ModuleTestCase):
             "password": "Test123456",
             "useralias": "ADMIN",
             "company": "DEFAULT_COMPANY"
-        })
+        }
         with patch.object(self.module, 'check_user') as check:
             check.return_value = False
 
@@ -83,13 +84,14 @@ class TestSAPRfcModule(ModuleTestCase):
                                                 'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
                 with self.assertRaises(AnsibleExitJson) as result:
-                    self.module.main()
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'User ADMIN created')
 
     def test_no_changes(self):
         """test execute user no changes"""
 
-        set_module_args({
+        args = {
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
@@ -100,7 +102,7 @@ class TestSAPRfcModule(ModuleTestCase):
             "password": "Test123456",
             "useralias": "ADMIN",
             "company": "DEFAULT_COMPANY"
-        })
+        }
         with patch.object(self.module, 'check_user') as check:
             check.return_value = True
 
@@ -114,19 +116,20 @@ class TestSAPRfcModule(ModuleTestCase):
                     DETAIL.return_value = True
 
                     with self.assertRaises(AnsibleExitJson) as result:
-                        self.module.main()
+                        with set_module_args(args):
+                            self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'No changes where made.')
 
     def test_absent(self):
         """test execute user delete success"""
 
-        set_module_args({
+        args = {
             "state": "absent",
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
             "username": "ADMIN",
-        })
+        }
         with patch.object(self.module, 'check_user') as check:
             check.return_value = True
 
@@ -137,19 +140,20 @@ class TestSAPRfcModule(ModuleTestCase):
                                                 'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
                 with self.assertRaises(AnsibleExitJson) as result:
-                    self.module.main()
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'User ADMIN deleted')
 
     def test_lock(self):
         """test execute user lock success"""
 
-        set_module_args({
+        args = {
             "state": "lock",
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
             "username": "ADMIN",
-        })
+        }
         with patch.object(self.module, 'check_user') as check:
             check.return_value = True
 
@@ -160,19 +164,20 @@ class TestSAPRfcModule(ModuleTestCase):
                                                 'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
                 with self.assertRaises(AnsibleExitJson) as result:
-                    self.module.main()
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'User ADMIN locked')
 
     def test_unlock(self):
         """test execute user lock success"""
 
-        set_module_args({
+        args = {
             "state": "lock",
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
             "username": "ADMIN",
-        })
+        }
         with patch.object(self.module, 'check_user') as check:
             check.return_value = True
 
@@ -183,5 +188,6 @@ class TestSAPRfcModule(ModuleTestCase):
                                                 'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
                 with self.assertRaises(AnsibleExitJson) as result:
-                    self.module.main()
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'User ADMIN unlocked')

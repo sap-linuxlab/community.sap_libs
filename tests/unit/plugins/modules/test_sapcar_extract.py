@@ -31,19 +31,20 @@ class Testsapcar_extract(ModuleTestCase):
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing."""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({})
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
 
     def test_sapcar_extract(self):
         """Check that result is changed."""
-        set_module_args({
+        args = {
             'path': "/tmp/HANA_CLIENT_REV2_00_053_00_LINUX_X86_64.SAR",
             'dest': "/tmp/test2",
             'binary_path': "/tmp/sapcar"
-        })
+        }
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, '', ''  # successful execution, no output
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
                 self.assertTrue(result.exception.args[0]['changed'])
         self.assertEqual(run_command.call_count, 1)

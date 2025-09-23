@@ -33,6 +33,7 @@ def set_module_args(args):
         with patch_module_args(args):
             yield
 
+
 class AnsibleExitJson(Exception):
     pass
 

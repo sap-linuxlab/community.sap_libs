@@ -36,12 +36,12 @@ class Testsap_hdbsql(ModuleTestCase):
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing."""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({})
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
 
     def test_sap_hdbsql(self):
         """Check that result is processed."""
-        set_module_args({
+        args = {
             'sid': "HDB",
             'instance': "01",
             'encrypted': False,
@@ -50,11 +50,12 @@ class Testsap_hdbsql(ModuleTestCase):
             'password': "1234Qwer",
             'database': "HDB",
             'query': "SELECT * FROM users;"
-        })
+        }
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
             self.assertEqual(result.exception.args[0]['query_result'], [[
                 {'username': 'testuser', 'name': 'test user'},
                 {'username': 'myuser', 'name': 'my user'},
@@ -63,7 +64,7 @@ class Testsap_hdbsql(ModuleTestCase):
 
     def test_hana_userstore_query(self):
         """Check that result is processed with userstore."""
-        set_module_args({
+        args = {
             'sid': "HDB",
             'instance': "01",
             'encrypted': False,
@@ -72,11 +73,12 @@ class Testsap_hdbsql(ModuleTestCase):
             'userstore': True,
             'database': "HDB",
             'query': "SELECT * FROM users;"
-        })
+        }
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
             self.assertEqual(result.exception.args[0]['query_result'], [[
                 {'username': 'testuser', 'name': 'test user'},
                 {'username': 'myuser', 'name': 'my user'},
@@ -86,7 +88,7 @@ class Testsap_hdbsql(ModuleTestCase):
     def test_hana_failed_no_passwd(self):
         """Check that result is failed with no password."""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({
+            args = {
                 'sid': "HDB",
                 'instance': "01",
                 'encrypted': False,
@@ -94,5 +96,6 @@ class Testsap_hdbsql(ModuleTestCase):
                 'user': "SYSTEM",
                 'database': "HDB",
                 'query': "SELECT * FROM users;"
-            })
-            self.module.main()
+            }
+            with set_module_args(args):
+                self.module.main()

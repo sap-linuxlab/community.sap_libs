@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, ModuleTestCase
+from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
 from ansible.module_utils import basic
 
@@ -32,7 +32,8 @@ class Testsap_system_facts(ModuleTestCase):
     def test_no_systems_available(self):
         """No SAP Systems"""
         with self.assertRaises(AnsibleExitJson) as result:
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
         self.assertEqual(result.exception.args[0]['ansible_facts'], {})
 
     def test_sap_system_facts_all(self):
@@ -47,7 +48,8 @@ class Testsap_system_facts(ModuleTestCase):
                         get_nw_nr.return_value = [{"InstanceType": "NW", "NR": "00", "SID": "ABC", "TYPE": "ASCS"},
                                                   {"InstanceType": "NW", "NR": "01", "SID": "ABC", "TYPE": "PAS"}]
                         with self.assertRaises(AnsibleExitJson) as result:
-                            self.module.main()
+                            with set_module_args({}):
+                                self.module.main()
         self.assertEqual(result.exception.args[0]['ansible_facts'], {'sap': [{"InstanceType": "HANA", "NR": "01", "SID": "HDB", "TYPE": "HDB"},
                                                                              {"InstanceType": "NW", "NR": "00", "SID": "ABC", "TYPE": "ASCS"},
                                                                              {"InstanceType": "NW", "NR": "01", "SID": "ABC", "TYPE": "PAS"}]})
@@ -61,7 +63,8 @@ class Testsap_system_facts(ModuleTestCase):
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [0, '', '']
                     with self.assertRaises(AnsibleExitJson) as result:
-                        self.module.main()
+                        with set_module_args({}):
+                            self.module.main()
         self.assertEqual(result.exception.args[0]['ansible_facts'], {'sap': [{"InstanceType": "HANA", "NR": "01", "SID": "HDB", "TYPE": "HDB"}]})
 
     def test_sap_system_facts_pas_nw(self):
@@ -73,7 +76,8 @@ class Testsap_system_facts(ModuleTestCase):
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [0, 'SAP\nINSTANCE_NAME, Attribute, D00\nSAP', '']
                     with self.assertRaises(AnsibleExitJson) as result:
-                        self.module.main()
+                        with set_module_args({}):
+                            self.module.main()
         self.assertEqual(result.exception.args[0]['ansible_facts'], {'sap': [{'InstanceType': 'NW', 'NR': '00', 'SID': 'ABC', 'TYPE': 'PAS'}]})
 
     def test_sap_system_facts_future_nw(self):
@@ -85,7 +89,8 @@ class Testsap_system_facts(ModuleTestCase):
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [0, 'SAP\nINSTANCE_NAME, Attribute, XY00\nSAP', '']
                     with self.assertRaises(AnsibleExitJson) as result:
-                        self.module.main()
+                        with set_module_args({}):
+                            self.module.main()
         self.assertEqual(result.exception.args[0]['ansible_facts'], {'sap': [{'InstanceType': 'NW', 'NR': '00', 'SID': 'ABC', 'TYPE': 'XXX'}]})
 
     def test_sap_system_facts_wd_nw(self):
@@ -97,5 +102,6 @@ class Testsap_system_facts(ModuleTestCase):
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [0, 'SAP\nINSTANCE_NAME, Attribute, WD80\nSAP', '']
                     with self.assertRaises(AnsibleExitJson) as result:
-                        self.module.main()
+                        with set_module_args({}):
+                            self.module.main()
         self.assertEqual(result.exception.args[0]['ansible_facts'], {'sap': [{'InstanceType': 'NW', 'NR': '80', 'SID': 'ABC', 'TYPE': 'WebDisp'}]})
