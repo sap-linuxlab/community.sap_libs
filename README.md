@@ -65,10 +65,11 @@ Every voice is important. If you have something on your mind, create an issue or
 ## Tested with Ansible and the following Python versions
 
 Tested Ansible versions:
-- 2.13
-- 2.14
 - 2.15
 - 2.16
+- 2.17
+- 2.18
+- 2.19
 - devel
 
 Tested Python versions:
@@ -78,6 +79,8 @@ Tested Python versions:
 - 3.9
 - 3.10
 - 3.11
+- 3.12
+- 3.13
 
 Due to SAP licensing and hardware requirements, integration tests are momentarily not feasible.
 The modules are tested manually against SAP systems until we found a solution or have some
