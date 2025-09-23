@@ -26,13 +26,13 @@ class TestSAPRfcModule(ModuleTestCase):
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({})
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
 
     def test_error_user_create(self):
         """test fail to create company"""
 
-        set_module_args({
+        args = {
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
@@ -46,7 +46,7 @@ class TestSAPRfcModule(ModuleTestCase):
             "street": "test_street",
             "street_no": "1",
             "e_mail": "test@test.de",
-        })
+        }
         with patch.object(self.module, 'call_rfc_method') as RAW:
             RAW.return_value = {'RETURN': [{'FIELD': '', 'ID': '01', 'LOG_MSG_NO': '000000',
                                             'LOG_NO': '', 'MESSAGE': 'Something went wrong', 'MESSAGE_V1': 'ADMIN',
@@ -54,13 +54,14 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'E'}]}
 
             with self.assertRaises(AnsibleFailJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Something went wrong')
 
     def test_success(self):
         """test execute company create success"""
 
-        set_module_args({
+        args = {
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
@@ -74,7 +75,7 @@ class TestSAPRfcModule(ModuleTestCase):
             "street": "test_street",
             "street_no": "1",
             "e_mail": "test@test.de",
-        })
+        }
         with patch.object(self.module, 'call_rfc_method') as RAW:
             RAW.return_value = {'RETURN': [{'FIELD': '', 'ID': '01', 'LOG_MSG_NO': '000000',
                                             'LOG_NO': '', 'MESSAGE': 'Company address COMP_ID created', 'MESSAGE_V1': 'ADMIN',
@@ -82,13 +83,14 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Company address COMP_ID created')
 
     def test_no_changes(self):
         """test execute company no changes"""
 
-        set_module_args({
+        args = {
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
@@ -102,7 +104,7 @@ class TestSAPRfcModule(ModuleTestCase):
             "street": "test_street",
             "street_no": "1",
             "e_mail": "test@test.de",
-        })
+        }
         with patch.object(self.module, 'call_rfc_method') as RAW:
             RAW.return_value = {'RETURN': [{'FIELD': '', 'ID': '01', 'LOG_MSG_NO': '000000',
                                             'LOG_NO': '', 'MESSAGE': 'Company address COMP_ID changed', 'MESSAGE_V1': 'ADMIN',
@@ -110,19 +112,20 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'No changes where made.')
 
     def test_absent(self):
         """test execute company delete success"""
 
-        set_module_args({
+        args = {
             "state": "absent",
             "conn_username": "DDIC",
             "conn_password": "Test1234",
             "host": "10.1.8.9",
             "company_id": "Comp_ID",
-        })
+        }
         with patch.object(self.module, 'call_rfc_method') as RAW:
             RAW.return_value = {'RETURN': [{'FIELD': '', 'ID': '01', 'LOG_MSG_NO': '000000',
                                             'LOG_NO': '', 'MESSAGE': 'Company address COMP_ID deleted', 'MESSAGE_V1': 'ADMIN',
@@ -130,5 +133,6 @@ class TestSAPRfcModule(ModuleTestCase):
                                             'PARAMETER': '', 'ROW': 0, 'SYSTEM': '', 'TYPE': 'S'}]}
 
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
         self.assertEqual(result.exception.args[0]['msg'], 'Company address COMP_ID deleted')

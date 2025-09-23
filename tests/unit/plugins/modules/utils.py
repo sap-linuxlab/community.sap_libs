@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
+import contextlib
 
 from ansible_collections.community.sap_libs.tests.unit.compat import unittest
 from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
@@ -11,18 +12,26 @@ from ansible.module_utils import basic
 from ansible.module_utils.common.text.converters import to_bytes
 
 
+@contextlib.contextmanager
 def set_module_args(args):
+    """
+    Context manager that sets module arguments for AnsibleModule
+    """
     if '_ansible_remote_tmp' not in args:
         args['_ansible_remote_tmp'] = '/tmp'
     if '_ansible_keep_remote_files' not in args:
         args['_ansible_keep_remote_files'] = False
 
-    args = json.dumps({'ANSIBLE_MODULE_ARGS': args})
-    basic._ANSIBLE_ARGS = to_bytes(args)
-    # ansible-core 2.19+ requires profile to be set.
-    # Exception: No serialization profile was specified.
-    basic._ANSIBLE_PROFILE = 'posix'
-
+    try:
+        from ansible.module_utils.testing import patch_module_args
+    except ImportError:
+        # Before ansible-core 2.19, this was the way to go:
+        serialized_args = to_bytes(json.dumps({'ANSIBLE_MODULE_ARGS': args}))
+        with patch.object(basic, '_ANSIBLE_ARGS', serialized_args):
+            yield
+    else:
+        with patch_module_args(args):
+            yield
 
 class AnsibleExitJson(Exception):
     pass
@@ -50,6 +59,5 @@ class ModuleTestCase(unittest.TestCase):
         self.mock_module.start()
         self.mock_sleep = patch('time.sleep')
         self.mock_sleep.start()
-        set_module_args({})
         self.addCleanup(self.mock_module.stop)
         self.addCleanup(self.mock_sleep.stop)
