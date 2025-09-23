@@ -57,6 +57,12 @@ jobs:
           - '3.11'
           - '3.12'
           - '3.13'
+        exclude:
+          # Exclude new python versions for older ansible versions
+          - ansible: 'stable-2.16'
+            python: '3.13'
+          - ansible: 'stable-2.17'
+            python: '3.13'
 
     steps:
       - name: Check out code
