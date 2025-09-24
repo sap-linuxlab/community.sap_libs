@@ -6,8 +6,8 @@ __metaclass__ = type
 import json
 import contextlib
 
-from ansible_collections.community.sap_libs.tests.unit.compat import unittest
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
+from unittest import TestCase
+from unittest.mock import patch
 from ansible.module_utils import basic
 from ansible.module_utils.common.text.converters import to_bytes
 
@@ -53,7 +53,7 @@ def fail_json(*args, **kwargs):
     raise AnsibleFailJson(kwargs)
 
 
-class ModuleTestCase(unittest.TestCase):
+class ModuleTestCase(TestCase):
 
     def setUp(self):
         self.mock_module = patch.multiple(basic.AnsibleModule, exit_json=exit_json, fail_json=fail_json)

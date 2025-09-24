@@ -9,7 +9,7 @@ __metaclass__ = type
 
 from ansible_collections.community.sap_libs.plugins.modules import sap_system_facts
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
+from unittest.mock import patch
 from ansible.module_utils import basic
 
 

@@ -4,7 +4,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import sys
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock, Mock
+from unittest.mock import patch, MagicMock, Mock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 sys.modules['suds.client'] = MagicMock()

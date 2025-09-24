@@ -13,7 +13,7 @@ from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils imp
     ModuleTestCase,
     set_module_args,
 )
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch
+from unittest.mock import patch
 from ansible.module_utils import basic
 
 

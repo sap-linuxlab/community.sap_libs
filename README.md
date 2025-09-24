@@ -73,14 +73,13 @@ Tested Ansible versions:
 - devel
 
 Tested Python versions:
-- 3.6
-- 3.7
-- 3.8
 - 3.9
 - 3.10
 - 3.11
 - 3.12
 - 3.13
+
+Support for Python 2 has been dropped. The minimum required Python version is 3.9.
 
 Due to SAP licensing and hardware requirements, integration tests are momentarily not feasible.
 The modules are tested manually against SAP systems until we found a solution or have some
