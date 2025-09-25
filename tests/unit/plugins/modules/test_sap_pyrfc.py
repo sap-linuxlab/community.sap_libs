@@ -13,7 +13,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import sys
-from ansible_collections.community.sap_libs.tests.unit.compat.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from ansible_collections.community.sap_libs.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 sys.modules['pyrfc'] = MagicMock()
@@ -33,13 +33,13 @@ class TestSAPRfcModule(ModuleTestCase):
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({})
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
 
     def test_error_module_not_found(self):
         """tests fail module error"""
 
-        set_module_args({
+        args = {
             "function": "STFC_CONNECTION",
             "parameters": {"REQUTEXT": "Hello SAP!"},
             "connection": {"ashost": "s4hana.poc.cloud",
@@ -48,18 +48,19 @@ class TestSAPRfcModule(ModuleTestCase):
                            "user": "DDIC",
                            "passwd": "Password1",
                            "lang": "EN"}
-        })
+        }
 
         with self.assertRaises(AnsibleFailJson) as result:
             self.module.HAS_PYRFC_LIBRARY = False
             self.module.PYRFC_LIBRARY_IMPORT_ERROR = 'Module not found'
-            self.module.main()
+            with set_module_args(args):
+                self.module.main()
         self.assertEqual(
             result.exception.args[0]['exception'], 'Module not found')
 
     def test_success_communication(self):
         """tests success"""
-        set_module_args({
+        args = {
             "function": "STFC_CONNECTION",
             "parameters": {"REQUTEXT": "Hello SAP!"},
             "connection": {"ashost": "s4hana.poc.cloud",
@@ -68,9 +69,10 @@ class TestSAPRfcModule(ModuleTestCase):
                            "user": "DDIC",
                            "passwd": "Password1",
                            "lang": "EN"}
-        })
+        }
         with patch.object(self.module, 'get_connection') as patch_call:
             patch_call.call.return_value = 'Patched'
             with self.assertRaises(AnsibleExitJson) as result:
-                self.module.main()
+                with set_module_args(args):
+                    self.module.main()
         self.assertEqual(result.exception.args[0]['changed'], True)

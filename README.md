@@ -62,29 +62,26 @@ The process of decision making in this collection is based on discussing and fin
 
 Every voice is important. If you have something on your mind, create an issue or dedicated discussion and let's discuss it!
 
-## Tested with Ansible and the following Python versions
+## Tested with the following Ansible and Python version combinations
 
-Tested Ansible versions:
-- 2.13
-- 2.14
-- 2.15
-- 2.16
-- devel
+Supported ansible-core versions:
+- `2.18` with Python `3.11 - 3.13`
+- `2.19` with Python `3.11 - 3.13`
+- `devel` with Python `3.11 - 3.13`
 
-Tested Python versions:
-- 3.6
-- 3.7
-- 3.8
-- 3.9
-- 3.10
-- 3.11
+End-of-life ansible-core versions are only tested for backwards compatibility.
+- `2.14` with Python `3.9 - 3.11`
+- `2.15` with Python `3.9 - 3.11`
+- `2.16` with Python `3.10 - 3.12`
+- `2.17` with Python `3.10 - 3.12`
 
-Due to SAP licensing and hardware requirements, integration tests are momentarily not feasible.
+**Support for Python 2 has been dropped in release `1.5.0`.**
+
+Due to SAP licensing and hardware requirements, integration tests are momentarily not feasible.  
 The modules are tested manually against SAP systems until we found a solution or have some
 modules where we are able to execute integration test we decided to disable these tests.
 
-The test support for Ansible versions 2.9 - 2.12 is disabled due to eol of these versions.
-The modules may work with these versions but are not tested.
+**NOTE:** All tests combinations were configured following official [ansible-core-support-matrix](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix).
 
 ## External requirements
 
