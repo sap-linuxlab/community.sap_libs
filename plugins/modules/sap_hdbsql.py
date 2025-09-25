@@ -152,7 +152,7 @@ query_result:
 
 import csv
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six import StringIO
+from io import StringIO
 from ansible.module_utils.common.text.converters import to_native
 
 

@@ -123,4 +123,16 @@ releases:
         in this collection that have been made after the previous release. 
     fragments:
     - 30-fix-lint-issues.yml
-    release_date: '2024-23-01'
+    release_date: '2024-01-23'
+  1.5.0:
+    changes:
+      minor_changes:
+        - collection - Update workflow `ansible-test` to include latest versions (https://github.com/sap-linuxlab/community.sap_libs/pull/54)
+        - collection - Enhance `ansible-test`` CI action, remove Python 2 and fix detected issues (https://github.com/sap-linuxlab/community.sap_libs/pull/60)
+        - collection - Update documentation and changelog for `1.5.0` release (https://github.com/sap-linuxlab/community.sap_libs/pull/61)
+        - sap_hdbsql - add -E option to filepath command (https://github.com/sap-linuxlab/community.sap_libs/pull/42)
+        - sap_control_exec - Remove unsupported functions (https://github.com/sap-linuxlab/community.sap_libs/pull/45)
+        - collection - Pipeline fixes and drop test support for ansible below 2.13 (https://github.com/sap-linuxlab/community.sap_libs/pull/43)
+      release_summary: This release removes `Python 2` support and updates `ansible-test` workflow to validate latest versions.
+        Documentation was updated to reflect supported and tested versions. 
+    release_date: '2025-09-25'
