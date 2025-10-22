@@ -26,6 +26,8 @@ description:
     - Provides support for sapstartsrv formaly known as sapcontrol
     - A complete information of all functions and the parameters can be found here
       U(https://www.sap.com/documents/2016/09/0a40e60d-8b7c-0010-82c7-eda71af511fa.html)
+    - When hostname is 'localhost', sysnr is set and no username/password are provided, the module will attempt
+      to use local Unix socket authentication (which works with 'become' privilege escalation).
 
 options:
     sysnr:
@@ -36,6 +38,7 @@ options:
     port:
         description:
             - The port number of the sapstartsrv.
+            - If provided, the module will use always use http connection instead of local socket.
         required: false
         type: int
     username:
@@ -157,14 +160,27 @@ EXAMPLES = r"""
     function: GetProcessList
     port: 50113
 
-- name: ParameterValue
+- name: ParameterValue with authentication
   community.sap_libs.sap_control_exec:
     hostname: 192.168.8.15
     sysnr: "01"
     username: hdbadm
-    password: test1234#
+    password: test1234
     function: ParameterValue
     parameter: ztta
+
+- name: GetVersionInfo using local Unix socket (requires become)
+  community.sap_libs.sap_control_exec:
+    sysnr: "00"
+    function: GetVersionInfo
+  become: true
+
+- name: GetProcessList using local Unix socket as SAP admin user
+  community.sap_libs.sap_control_exec:
+    sysnr: "00"
+    function: GetProcessList
+  become: true
+  become_user: "{{ sap_sid | lower }}adm"
 """
 
 RETURN = r'''
@@ -213,15 +229,66 @@ out:
 
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 import traceback
+import socket
+import os
+
+try:
+    from urllib.request import HTTPHandler
+except ImportError:
+    from ansible.module_utils.urls import (
+        UnixHTTPHandler as HTTPHandler,
+    )
+
+try:
+    from http.client import HTTPConnection
+except ImportError:
+    from httplib import HTTPConnection
+
 try:
     from suds.client import Client
     from suds.sudsobject import asdict
+    from suds.transport.http import HttpAuthenticated, HttpTransport
 except ImportError:
     HAS_SUDS_LIBRARY = False
     SUDS_LIBRARY_IMPORT_ERROR = traceback.format_exc()
 else:
     SUDS_LIBRARY_IMPORT_ERROR = None
     HAS_SUDS_LIBRARY = True
+
+
+class LocalSocketHttpConnection(HTTPConnection):
+    """HTTP connection class that uses Unix domain sockets."""
+    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
+                 source_address=None, socketpath=None):
+        super(LocalSocketHttpConnection, self).__init__(host, port, timeout, source_address)
+        self.socketpath = socketpath
+
+    def connect(self):
+        """Connect to Unix domain socket."""
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.connect(self.socketpath)
+
+
+class LocalSocketHandler(HTTPHandler):
+    """HTTP handler for Unix domain sockets."""
+    def __init__(self, debuglevel=0, socketpath=None):
+        self._debuglevel = debuglevel
+        self._socketpath = socketpath
+
+    def http_open(self, req):
+        return self.do_open(LocalSocketHttpConnection, req, socketpath=self._socketpath)
+
+
+class LocalSocketHttpAuthenticated(HttpAuthenticated):
+    """Authenticated HTTP transport using Unix domain sockets."""
+    def __init__(self, socketpath, **kwargs):
+        HttpAuthenticated.__init__(self, **kwargs)
+        self._socketpath = socketpath
+
+    def u2handlers(self):
+        handlers = HttpTransport.u2handlers(self)
+        handlers.append(LocalSocketHandler(socketpath=self._socketpath))
+        return handlers
 
 
 def choices():
@@ -260,9 +327,28 @@ def recursive_dict(suds_object):
     return out
 
 
-def connection(hostname, port, username, password, function, parameter):
-    url = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
-    client = Client(url, username=username, password=password)
+def connection(hostname, port, username, password, function, parameter, sysnr=None, use_local=False):
+    if use_local and sysnr is not None:
+        # Use Unix domain socket for local connection
+        unix_socket = "/tmp/.sapstream5{0}13".format(str(sysnr).zfill(2))
+        
+        # Check if socket exists
+        if not os.path.exists(unix_socket):
+            raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
+        
+        url = "http://localhost/sapcontrol?wsdl"
+        print("Connecting to local SAP control via Unix socket: " + unix_socket)
+        
+        try:
+            localsocket = LocalSocketHttpAuthenticated(unix_socket)
+            client = Client(url, transport=localsocket)
+        except Exception as e:
+            raise Exception("Failed to connect via Unix socket: {0}".format(str(e)))
+    else:
+        # Use HTTP connection (original behavior)
+        url = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
+        client = Client(url, username=username, password=password)
+    
     _function = getattr(client.service, function)
     if parameter is not None:
         result = _function(parameter)
@@ -288,6 +374,7 @@ def main():
             parameter=dict(type='str', required=False),
             force=dict(type='bool', default=False),
         ),
+        # Remove strict requirements to allow local mode
         required_one_of=[('sysnr', 'port')],
         mutually_exclusive=[('sysnr', 'port')],
         supports_check_mode=False,
@@ -309,26 +396,46 @@ def main():
             msg=missing_required_lib('suds'),
             exception=SUDS_LIBRARY_IMPORT_ERROR)
 
+    # Validate arguments
+    if sysnr is None and port is None:
+        module.fail_json(msg="Either 'sysnr' or 'port' must be provided")
+    
+    if sysnr is not None and port is not None:
+        module.fail_json(msg="'sysnr' and 'port' are mutually exclusive")
+
     if function == "Stop":
         if force is False:
             module.fail_json(msg="Stop function requires force: True")
 
+    # Determine if we should use local Unix socket connection
+    # Use local if hostname is localhost and no username/password provided
+    use_local = (hostname == "localhost" and 
+                 username is None and 
+                 password is None and 
+                 sysnr is not None)
+
     if port is None:
         try:
-            try:
-                conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter)
-            except Exception:
-                conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter)
+            if use_local:
+                # Try local connection first
+                conn = connection(hostname, None, username, password, function, parameter, sysnr, use_local=True)
+            else:
+                # Try HTTP ports
+                try:
+                    conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
+                except Exception:
+                    conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
         except Exception as err:
             result['error'] = str(err)
     else:
         try:
-            conn = connection(hostname, port, username, password, function, parameter)
+            conn = connection(hostname, port, username, password, function, parameter, sysnr, use_local=False)
         except Exception as err:
             result['error'] = str(err)
 
     if result['error'] != '':
-        result['msg'] = 'Something went wrong connecting to the SAPCONTROL SOAP API.'
+        connection_type = "Unix socket" if use_local else "SOAP API"
+        result['msg'] = 'Something went wrong connecting to the {0}.'.format(connection_type)
         module.fail_json(**result)
 
     if conn is not None:
