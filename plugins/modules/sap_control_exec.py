@@ -270,9 +270,10 @@ except ImportError:
     class LocalSocketHttpAuthenticated(object):
         def __init__(self, socketpath, **kwargs):
             pass
-        
+
         def u2handlers(self):
             return []
+
 
 class LocalSocketHttpConnection(HTTPConnection):
     """HTTP connection class that uses Unix domain sockets."""
@@ -285,6 +286,7 @@ class LocalSocketHttpConnection(HTTPConnection):
         """Connect to Unix domain socket."""
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.connect(self.socketpath)
+
 
 class LocalSocketHandler(HTTPHandler):
     """HTTP handler for Unix domain sockets."""
