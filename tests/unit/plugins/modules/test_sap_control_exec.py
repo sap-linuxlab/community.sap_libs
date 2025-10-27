@@ -65,8 +65,8 @@ class TestSapcontrolModule(ModuleTestCase):
                 self.module.main()
         error_msg = result.exception.args[0]['msg']
         expected_messages = [
-         'Something went wrong connecting to the SOAP API.',
-         'Something went wrong connecting to the Unix socket.'
+            'Something went wrong connecting to the SOAP API.',
+            'Something went wrong connecting to the Unix socket.'
         ]
         self.assertIn(error_msg, expected_messages)
 
