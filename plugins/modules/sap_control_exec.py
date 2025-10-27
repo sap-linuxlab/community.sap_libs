@@ -255,6 +255,17 @@ else:
     SUDS_LIBRARY_IMPORT_ERROR = None
     HAS_SUDS_LIBRARY = True
 
+<<<<<<< Updated upstream
+=======
+    # Define dummy class when suds is not available
+    class LocalSocketHttpAuthenticated(object):
+        def __init__(self, socketpath, **kwargs):
+            pass
+
+        def u2handlers(self):
+            return []
+>>>>>>> Stashed changes
+
 
 class LocalSocketHttpConnection(HTTPConnection):
     """HTTP connection class that uses Unix domain sockets."""
