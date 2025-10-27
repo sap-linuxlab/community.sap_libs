@@ -248,17 +248,35 @@ try:
     from suds.client import Client
     from suds.sudsobject import asdict
     from suds.transport.http import HttpAuthenticated, HttpTransport
+    HAS_SUDS_LIBRARY = True
+    SUDS_LIBRARY_IMPORT_ERROR = None
+
+    class LocalSocketHttpAuthenticated(HttpAuthenticated):
+        """Authenticated HTTP transport using Unix domain sockets."""
+        def __init__(self, socketpath, **kwargs):
+            HttpAuthenticated.__init__(self, **kwargs)
+            self._socketpath = socketpath
+
+        def u2handlers(self):
+            handlers = HttpTransport.u2handlers(self)
+            handlers.append(LocalSocketHandler(socketpath=self._socketpath))
+            return handlers
+
 except ImportError:
     HAS_SUDS_LIBRARY = False
     SUDS_LIBRARY_IMPORT_ERROR = traceback.format_exc()
-else:
-    SUDS_LIBRARY_IMPORT_ERROR = None
-    HAS_SUDS_LIBRARY = True
 
+    # Define dummy class when suds is not available
+    class LocalSocketHttpAuthenticated(object):
+        def __init__(self, socketpath, **kwargs):
+            pass
+        
+        def u2handlers(self):
+            return []
 
 class LocalSocketHttpConnection(HTTPConnection):
     """HTTP connection class that uses Unix domain sockets."""
-    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
+    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
                  source_address=None, socketpath=None):
         super(LocalSocketHttpConnection, self).__init__(host, port, timeout, source_address)
         self.socketpath = socketpath
@@ -272,25 +290,29 @@ class LocalSocketHttpConnection(HTTPConnection):
 class LocalSocketHandler(HTTPHandler):
     """HTTP handler for Unix domain sockets."""
     def __init__(self, debuglevel=0, socketpath=None):
-        self._debuglevel = debuglevel
+        HTTPHandler.__init__(self, debuglevel)
         self._socketpath = socketpath
 
     def http_open(self, req):
         return self.do_open(LocalSocketHttpConnection, req, socketpath=self._socketpath)
 
+    def do_open(self, http_class, req, **http_conn_args):
+        """Override to handle Unix socket connections."""
+        host = req.host
+        if not host:
+            raise ValueError('no host given')
 
-class LocalSocketHttpAuthenticated(HttpAuthenticated):
-    """Authenticated HTTP transport using Unix domain sockets."""
-    def __init__(self, socketpath, **kwargs):
-        HttpAuthenticated.__init__(self, **kwargs)
-        self._socketpath = socketpath
+        http_conn = http_class(host, **http_conn_args)
+        http_conn.set_debuglevel(self._debuglevel)
 
-    def u2handlers(self):
-        handlers = HttpTransport.u2handlers(self)
-        handlers.append(LocalSocketHandler(socketpath=self._socketpath))
-        return handlers
+        try:
+            http_conn.connect()
+            r = http_conn.getresponse()
+        except Exception as err:
+            http_conn.close()
+            raise err
 
-
+        return r
 def choices():
     retlist = ["Start", "Stop", "Shutdown", "InstanceStart", "InstanceStop", "Bootstrap", "ParameterValue", "GetProcessList",
                "GetProcessList2", "GetStartProfile", "GetTraceFile", "GetAlertTree", "GetAlerts", "RestartService",
@@ -331,14 +353,13 @@ def connection(hostname, port, username, password, function, parameter, sysnr=No
     if use_local and sysnr is not None:
         # Use Unix domain socket for local connection
         unix_socket = "/tmp/.sapstream5{0}13".format(str(sysnr).zfill(2))
-        
+
         # Check if socket exists
         if not os.path.exists(unix_socket):
             raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
-        
+
         url = "http://localhost/sapcontrol?wsdl"
-        print("Connecting to local SAP control via Unix socket: " + unix_socket)
-        
+
         try:
             localsocket = LocalSocketHttpAuthenticated(unix_socket)
             client = Client(url, transport=localsocket)
@@ -348,7 +369,7 @@ def connection(hostname, port, username, password, function, parameter, sysnr=No
         # Use HTTP connection (original behavior)
         url = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
         client = Client(url, username=username, password=password)
-    
+
     _function = getattr(client.service, function)
     if parameter is not None:
         result = _function(parameter)
@@ -399,7 +420,7 @@ def main():
     # Validate arguments
     if sysnr is None and port is None:
         module.fail_json(msg="Either 'sysnr' or 'port' must be provided")
-    
+
     if sysnr is not None and port is not None:
         module.fail_json(msg="'sysnr' and 'port' are mutually exclusive")
 
@@ -409,9 +430,9 @@ def main():
 
     # Determine if we should use local Unix socket connection
     # Use local if hostname is localhost and no username/password provided
-    use_local = (hostname == "localhost" and 
-                 username is None and 
-                 password is None and 
+    use_local = (hostname == "localhost" and
+                 username is None and
+                 password is None and
                  sysnr is not None)
 
     if port is None:
