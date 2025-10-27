@@ -19,8 +19,12 @@ class TestSapcontrolModule(ModuleTestCase):
     def setUp(self):
         super(TestSapcontrolModule, self).setUp()
         self.module = sap_control_exec
+        # Patch HAS_SUDS_LIBRARY for all tests
+        self.patcher_suds = patch.object(self.module, 'HAS_SUDS_LIBRARY', True)
+        self.patcher_suds.start()
 
     def tearDown(self):
+        self.patcher_suds.stop()
         super(TestSapcontrolModule, self).tearDown()
 
     def define_rfc_connect(self, mocker):
@@ -59,7 +63,12 @@ class TestSapcontrolModule(ModuleTestCase):
             self.module.Client.side_effect = Mock(side_effect=Exception('Test'))
             with set_module_args(args):
                 self.module.main()
-        self.assertEqual(result.exception.args[0]['msg'], 'Something went wrong connecting to the SAPCONTROL SOAP API.')
+        error_msg = result.exception.args[0]['msg']
+        expected_messages = [
+         'Something went wrong connecting to the SOAP API.',
+         'Something went wrong connecting to the Unix socket.'
+        ]
+        self.assertIn(error_msg, expected_messages)
 
     def test_error_port_sysnr(self):
         """tests fail multi provide parameters"""
@@ -97,11 +106,13 @@ class TestSapcontrolModule(ModuleTestCase):
             "sysnr": "01",
             "function": "GetProcessList"
         }
-        with patch.object(self.module, 'recursive_dict') as ret:
-            ret.return_value = {'item': [{'name': 'hdbdaemon', 'value': '1'}]}
-            with self.assertRaises(AnsibleExitJson) as result:
-                with set_module_args(args):
-                    self.module.main()
+        with patch.object(self.module, 'connection') as mock_connection:
+            mock_connection.return_value = {'item': [{'name': 'hdbdaemon', 'value': '1'}]}
+            with patch.object(self.module, 'recursive_dict') as ret:
+                ret.return_value = {'item': [{'name': 'hdbdaemon', 'value': '1'}]}
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [{'item': [{'name': 'hdbdaemon', 'value': '1'}]}])
 
     def test_success_port(self):
@@ -109,14 +120,16 @@ class TestSapcontrolModule(ModuleTestCase):
 
         args = {
             "hostname": "192.168.8.15",
-            "port": "50113",
+            "port": 50113,
             "function": "GetProcessList"
         }
-        with patch.object(self.module, 'recursive_dict') as ret:
-            ret.return_value = {'item': [{'name': 'hdbdaemon', 'value': '1'}]}
-            with self.assertRaises(AnsibleExitJson) as result:
-                with set_module_args(args):
-                    self.module.main()
+        with patch.object(self.module, 'connection') as mock_connection:
+            mock_connection.return_value = {'item': [{'name': 'hdbdaemon', 'value': '1'}]}
+            with patch.object(self.module, 'recursive_dict') as ret:
+                ret.return_value = {'item': [{'name': 'hdbdaemon', 'value': '1'}]}
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [{'item': [{'name': 'hdbdaemon', 'value': '1'}]}])
 
     def test_success_string(self):
