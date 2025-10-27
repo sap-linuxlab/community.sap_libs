@@ -248,28 +248,35 @@ try:
     from suds.client import Client
     from suds.sudsobject import asdict
     from suds.transport.http import HttpAuthenticated, HttpTransport
+    HAS_SUDS_LIBRARY = True
+    SUDS_LIBRARY_IMPORT_ERROR = None
+
+    class LocalSocketHttpAuthenticated(HttpAuthenticated):
+        """Authenticated HTTP transport using Unix domain sockets."""
+        def __init__(self, socketpath, **kwargs):
+            HttpAuthenticated.__init__(self, **kwargs)
+            self._socketpath = socketpath
+
+        def u2handlers(self):
+            handlers = HttpTransport.u2handlers(self)
+            handlers.append(LocalSocketHandler(socketpath=self._socketpath))
+            return handlers
+
 except ImportError:
     HAS_SUDS_LIBRARY = False
     SUDS_LIBRARY_IMPORT_ERROR = traceback.format_exc()
-else:
-    SUDS_LIBRARY_IMPORT_ERROR = None
-    HAS_SUDS_LIBRARY = True
 
-<<<<<<< Updated upstream
-=======
     # Define dummy class when suds is not available
     class LocalSocketHttpAuthenticated(object):
         def __init__(self, socketpath, **kwargs):
             pass
-
+        
         def u2handlers(self):
             return []
->>>>>>> Stashed changes
-
 
 class LocalSocketHttpConnection(HTTPConnection):
     """HTTP connection class that uses Unix domain sockets."""
-    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, 
+    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
                  source_address=None, socketpath=None):
         super(LocalSocketHttpConnection, self).__init__(host, port, timeout, source_address)
         self.socketpath = socketpath
@@ -279,7 +286,6 @@ class LocalSocketHttpConnection(HTTPConnection):
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.connect(self.socketpath)
 
-
 class LocalSocketHandler(HTTPHandler):
     """HTTP handler for Unix domain sockets."""
     def __init__(self, debuglevel=0, socketpath=None):
@@ -288,18 +294,6 @@ class LocalSocketHandler(HTTPHandler):
 
     def http_open(self, req):
         return self.do_open(LocalSocketHttpConnection, req, socketpath=self._socketpath)
-
-
-class LocalSocketHttpAuthenticated(HttpAuthenticated):
-    """Authenticated HTTP transport using Unix domain sockets."""
-    def __init__(self, socketpath, **kwargs):
-        HttpAuthenticated.__init__(self, **kwargs)
-        self._socketpath = socketpath
-
-    def u2handlers(self):
-        handlers = HttpTransport.u2handlers(self)
-        handlers.append(LocalSocketHandler(socketpath=self._socketpath))
-        return handlers
 
 
 def choices():
@@ -342,14 +336,13 @@ def connection(hostname, port, username, password, function, parameter, sysnr=No
     if use_local and sysnr is not None:
         # Use Unix domain socket for local connection
         unix_socket = "/tmp/.sapstream5{0}13".format(str(sysnr).zfill(2))
-        
+
         # Check if socket exists
         if not os.path.exists(unix_socket):
             raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
-        
+
         url = "http://localhost/sapcontrol?wsdl"
-        print("Connecting to local SAP control via Unix socket: " + unix_socket)
-        
+
         try:
             localsocket = LocalSocketHttpAuthenticated(unix_socket)
             client = Client(url, transport=localsocket)
@@ -359,7 +352,7 @@ def connection(hostname, port, username, password, function, parameter, sysnr=No
         # Use HTTP connection (original behavior)
         url = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
         client = Client(url, username=username, password=password)
-    
+
     _function = getattr(client.service, function)
     if parameter is not None:
         result = _function(parameter)
@@ -410,7 +403,7 @@ def main():
     # Validate arguments
     if sysnr is None and port is None:
         module.fail_json(msg="Either 'sysnr' or 'port' must be provided")
-    
+
     if sysnr is not None and port is not None:
         module.fail_json(msg="'sysnr' and 'port' are mutually exclusive")
 
@@ -420,9 +413,9 @@ def main():
 
     # Determine if we should use local Unix socket connection
     # Use local if hostname is localhost and no username/password provided
-    use_local = (hostname == "localhost" and 
-                 username is None and 
-                 password is None and 
+    use_local = (hostname == "localhost" and
+                 username is None and
+                 password is None and
                  sysnr is not None)
 
     if port is None:
