@@ -1,0 +1,4 @@
+modules:
+      - description: Ansible Module to execute SapHostControl
+        name: sap_hostctrl_exec
+        namespace: system
