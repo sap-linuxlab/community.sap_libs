@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2022, Rainer Leber rainerleber@gmail.com, rainer.leber@sva.de,
-#                      Robert Kraemer @rkpobe, robert.kraemer@sva.de
+# Copyright: (c) 2025, Yannick Douvry, ydouvry@oxya.com
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -107,9 +106,10 @@ options:
         default: false
         type: bool
 author:
+    - Rainer Leber (@RainerLeber)
+    - Robert Kraemer (@rkpobe)
     - Yannick Douvry (@ydouvry)
 notes:
-    - Initial code from sap_control_exec module writen by Rainer Leber (@RainerLeber) and Robert Kraemer (@rkpobe)
     - Does not support C(check_mode).
 '''
 
