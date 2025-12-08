@@ -14,54 +14,6 @@ sys.modules['suds'] = MagicMock()
 from ansible_collections.community.sap_libs.plugins.modules import sap_hostctrl_exec
 
 
-class FakeSudsObject:
-
-    """ A simple class for creating suds-like objects from a dictionnary. """
-
-    @staticmethod
-    def items(sobject):
-        yield from sobject.__iter__()
-
-    @staticmethod
-    def asdict(sobject):
-        return dict(FakeSudsObject.items(sobject))
-
-    def __init__(self, dict):
-        self.__keylist__ = []
-        for a in dict.items():
-            setattr(self, a[0], a[1])
-
-    def __setattr__(self, name, value):
-        builtin = name.startswith('__') and name.endswith('__')
-        if not builtin and name not in self.__keylist__:
-            self.__keylist__.append(name)
-        self.__dict__[name] = value
-
-    def __iter__(self):
-        return FakeSudsObject.Iter(self)
-
-    class Iter:
-
-        def __init__(self, sobject):
-            self.sobject = sobject
-            self.keylist = sobject.__keylist__
-            self.index = 0
-
-        def __next__(self):
-            keylist = self.keylist
-            nkeys = len(self.keylist)
-            while self.index < nkeys:
-                k = keylist[self.index]
-                self.index += 1
-                if hasattr(self.sobject, k):
-                    v = getattr(self.sobject, k)
-                    return (k, v)
-            raise StopIteration()
-
-        def __iter__(self):
-            return self
-
-
 class TestSapcontrolModule(ModuleTestCase):
 
     def setUp(self):
@@ -141,11 +93,12 @@ class TestSapcontrolModule(ModuleTestCase):
                               'mSid': 'TST',
                               'mSystemNumber': '00'}]}
         with patch.object(self.module, 'connection') as mock_connection:
-            self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
-            mock_connection.return_value = FakeSudsObject(ret_dict)
-            with self.assertRaises(AnsibleExitJson) as result:
-                with set_module_args(args):
-                    self.module.main()
+            with patch.object(self.module, 'recursive_dict') as ret:
+                ret.return_value = ret_dict
+                mock_connection.return_value = ret_dict
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
 
     def test_success_port(self):
@@ -161,11 +114,12 @@ class TestSapcontrolModule(ModuleTestCase):
                               'mSid': 'TST',
                               'mSystemNumber': '00'}]}
         with patch.object(self.module, 'connection') as mock_connection:
-            self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
-            mock_connection.return_value = FakeSudsObject(ret_dict)
-            with self.assertRaises(AnsibleExitJson) as result:
-                with set_module_args(args):
-                    self.module.main()
+            with patch.object(self.module, 'recursive_dict') as ret:
+                ret.return_value = ret_dict
+                mock_connection.return_value = ret_dict
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
 
     def test_success_local(self):
@@ -179,11 +133,12 @@ class TestSapcontrolModule(ModuleTestCase):
                               'mSid': 'TST',
                               'mSystemNumber': '00'}]}
         with patch.object(self.module, 'connection') as mock_connection:
-            self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
-            mock_connection.return_value = FakeSudsObject(ret_dict)
-            with self.assertRaises(AnsibleExitJson) as result:
-                with set_module_args(args):
-                    self.module.main()
+            with patch.object(self.module, 'recursive_dict') as ret:
+                ret.return_value = ret_dict
+                mock_connection.return_value = ret_dict
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
 
     def test_success_parameters(self):
@@ -216,9 +171,10 @@ class TestSapcontrolModule(ModuleTestCase):
                         {"mMessageKey": "LogMsg/Source", "mMessageValue": "saphostcontrol"},
                         {"mMessageKey": "LogMsg/Text", "mMessageValue": "'sapcontrol -function StartWait' successfully executed"}]}}
         with patch.object(self.module, 'connection') as mock_connection:
-            self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
-            mock_connection.return_value = FakeSudsObject(ret_dict)
-            with self.assertRaises(AnsibleExitJson) as result:
-                with set_module_args(args):
-                    self.module.main()
+            with patch.object(self.module, 'recursive_dict') as ret:
+                ret.return_value = ret_dict
+                mock_connection.return_value = ret_dict
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args(args):
+                        self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])

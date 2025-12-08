@@ -107,9 +107,9 @@ options:
         default: false
         type: bool
 author:
-    - Rainer Leber (@RainerLeber)
-    - Robert Kraemer (@rkpobe)
     - Yannick Douvry (@ydouvry)
+seealso:
+    - sap_control_exec module writen by Rainer Leber (@RainerLeber) and Robert Kraemer (@rkpobe)
 notes:
     - Does not support C(check_mode).
 '''
