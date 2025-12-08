@@ -249,7 +249,7 @@ class LocalSocketHandler(HTTPHandler):
 
 
 def choices():
-    retlist = ["ACOSPrepare", "AttachDatabase", "CallServiceOperation", "CancelOperation","ConfigureOutsideDiscovery",
+    retlist = ["ACOSPrepare", "AttachDatabase", "CallServiceOperation", "CancelOperation", "ConfigureOutsideDiscovery",
                "ConfigureOutsideDiscoveryDestination", "ConfigureOutsideDiscoveryPath", "DeployConfiguration", "DeployManagedObjectsFromSAR",
                "DetachDatabase", "DetectManagedObjects", "ExecuteDatabaseOperation", "ExecuteInstallationProcedure", "ExecuteOperation",
                "ExecuteOutsideDiscovery", "ExecuteUpgradeProcedure", "FinalizeDatabaseCopy", "GetCIMObject", "GetComputerSystem",

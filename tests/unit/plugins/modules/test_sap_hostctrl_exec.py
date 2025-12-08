@@ -13,33 +13,33 @@ sys.modules['suds'] = MagicMock()
 
 from ansible_collections.community.sap_libs.plugins.modules import sap_hostctrl_exec
 
+
 class FakeSudsObject:
+
     """ A simple class for creating suds-like objects from a dictionnary. """
 
     @staticmethod
     def items(sobject):
-        for item in sobject:
-            yield item
-    
+        yield from sobject.__iter__()
+
     @staticmethod
     def asdict(sobject):
         return dict(FakeSudsObject.items(sobject))
-    
-    def __init__(self,dict={}):
+
+    def __init__(self, dict):
         self.__keylist__ = []
         for a in dict.items():
             setattr(self, a[0], a[1])
 
     def __setattr__(self, name, value):
         builtin = name.startswith('__') and name.endswith('__')
-        if not builtin and \
-            name not in self.__keylist__:
+        if not builtin and name not in self.__keylist__:
             self.__keylist__.append(name)
         self.__dict__[name] = value
 
     def __iter__(self):
         return FakeSudsObject.Iter(self)
-    
+
     class Iter:
 
         def __init__(self, sobject):
@@ -60,6 +60,7 @@ class FakeSudsObject:
 
         def __iter__(self):
             return self
+
 
 class TestSapcontrolModule(ModuleTestCase):
 
@@ -135,10 +136,10 @@ class TestSapcontrolModule(ModuleTestCase):
             "hostname": "192.168.8.15",
             "function": "ListInstances"
         }
-        ret_dict = {'item': [{  'mHostname': 'test-vm-001',
-                                'mSapVersionInfo': '793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb',
-                                'mSid': 'TST',
-                                'mSystemNumber': '00'}]}
+        ret_dict = {'item': [{'mHostname': 'test-vm-001',
+                              'mSapVersionInfo': '793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb',
+                              'mSid': 'TST',
+                              'mSystemNumber': '00'}]}
         with patch.object(self.module, 'connection') as mock_connection:
             self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
             mock_connection.return_value = FakeSudsObject(ret_dict)
@@ -155,10 +156,10 @@ class TestSapcontrolModule(ModuleTestCase):
             "port": 1128,
             "function": "ListInstances"
         }
-        ret_dict = {'item': [{  'mHostname': 'test-vm-001',
-                                'mSapVersionInfo': '793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb',
-                                'mSid': 'TST',
-                                'mSystemNumber': '00'}]}
+        ret_dict = {'item': [{'mHostname': 'test-vm-001',
+                              'mSapVersionInfo': '793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb',
+                              'mSid': 'TST',
+                              'mSystemNumber': '00'}]}
         with patch.object(self.module, 'connection') as mock_connection:
             self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
             mock_connection.return_value = FakeSudsObject(ret_dict)
@@ -166,17 +167,17 @@ class TestSapcontrolModule(ModuleTestCase):
                 with set_module_args(args):
                     self.module.main()
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
-    
+
     def test_success_local(self):
         """test success with local port"""
 
         args = {
             "function": "ListInstances"
         }
-        ret_dict = {'item': [{  'mHostname': 'test-vm-001',
-                                'mSapVersionInfo': '793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb',
-                                'mSid': 'TST',
-                                'mSystemNumber': '00'}]}
+        ret_dict = {'item': [{'mHostname': 'test-vm-001',
+                              'mSapVersionInfo': '793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb',
+                              'mSid': 'TST',
+                              'mSystemNumber': '00'}]}
         with patch.object(self.module, 'connection') as mock_connection:
             self.module.asdict.side_effect = Mock(side_effect=FakeSudsObject.asdict)
             mock_connection.return_value = FakeSudsObject(ret_dict)
@@ -191,11 +192,13 @@ class TestSapcontrolModule(ModuleTestCase):
         args = {
             "hostname": "192.168.8.15",
             "function": "StartInstance",
-            "parameters": { "aInstance": { "mSid": "TST", "mSystemNumber": '00' },
-                            "aOptions": { "mTimeout": -1, "mSoftTimeout": 0, "mOptions": ["O-INSTANCE"] } }
+            "parameters": {
+                "aInstance": {"mSid": "TST", "mSystemNumber": '00'},
+                "aOptions": {"mTimeout": -1, "mSoftTimeout": 0, "mOptions": ["O-INSTANCE"]}
+            }
         }
         ret_dict = {"mOperationID": "42010A3F050C1FD0B3D4D6F5E5D41924",
-                    "mOperationResults": { "item": [
+                    "mOperationResults": {"item": [
                         {"mMessageKey": "LogMsg/TimeStamp", "mMessageValue": "null"},
                         {"mMessageKey": "LogMsg/Severity", "mMessageValue": "Info"},
                         {"mMessageKey": "LogMsg/Source", "mMessageValue": "saphostcontrol"},
