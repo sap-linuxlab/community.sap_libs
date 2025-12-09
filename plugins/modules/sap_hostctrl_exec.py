@@ -25,7 +25,7 @@ version_added: "1.6.0"
 
 description:
     - Provides support for SAP Host Agent
-    - More information of some functions can be found here :
+    - More information of some functions can be found here
       U(https://help.sap.com/docs/host-agent/saphostcontrol-web-service-interface)
     - When hostname is 'localhost' and no username/password are provided, the module will attempt
       to use local Unix socket authentication (which works with 'become' privilege escalation).
@@ -100,7 +100,7 @@ options:
         description:
             - A dictionary containing all the parameters to pass to the function.
             - This option is mandatory for most of the functions, only a few like ListInstances or ListDatabases can be run without option.
-            - WARNING : No validation is done by this module regarding the suboptions.
+            - Be careful, no validation is done by this module regarding the suboptions.
             - An analysis of the WSDL file must be done to provide correct parameters.
             - See also the examples section for more appreciation.
         required: false
@@ -118,6 +118,7 @@ author:
 notes:
     - Does not support C(check_mode).
 '''
+
 
 EXAMPLES = r"""
 - name: ListDatabases with custom host and port
@@ -215,7 +216,7 @@ EXAMPLES = r"""
 # msg: Succesful execution of: GetOperationResults
 # out:
 #   - mOperationID: "42010A3F050B1FD0B5A26EF66B9FA7B7"
-#     mOperationResults: 
+#     mOperationResults:
 #       item:
 #         - mMessageKey: description
 #           mMessageValue: Say hello
