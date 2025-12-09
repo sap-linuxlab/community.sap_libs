@@ -25,7 +25,7 @@ version_added: "1.6.0"
 
 description:
     - Provides support for SAP Host Agent
-    - A complete information of all functions and the parameters can be found here
+    - More information of some functions can be found here :
       U(https://help.sap.com/docs/host-agent/saphostcontrol-web-service-interface)
     - When hostname is 'localhost' and no username/password are provided, the module will attempt
       to use local Unix socket authentication (which works with 'become' privilege escalation).
@@ -98,7 +98,11 @@ options:
         type: str
     parameters:
         description:
-            - All the parameters to pass to the function.
+            - A dictionary containing all the parameters to pass to the function.
+            - This option is mandatory for most of the functions, only a few like ListInstances or ListDatabases can be run without option.
+            - WARNING : No validation is done by this module regarding the suboptions.
+            - An analysis of the WSDL file must be done to provide correct parameters.
+            - See also the examples section for more appreciation.
         required: false
         type: dict
     force:
@@ -122,6 +126,20 @@ EXAMPLES = r"""
     function: ListDatabases
     port: 1128
 
+- name: ListInstances using local Unix socket (requires become)
+  community.sap_libs.sap_hostctrl_exec:
+    function: ListInstances
+  become: true
+
+- name: ListInstances using local Unix socket as SAP admin user and selector parameters
+  community.sap_libs.sap_hostctrl_exec:
+    function: ListInstances
+    parameters:
+      aSelector:
+        aInstanceStatus: S-INSTALLED # S-INSTALLED | S_RUNNING | S-STOPPED | S-LAST
+  become: true
+  become_user: "{{ sap_sid | lower }}adm"
+
 - name: StartInstance with authentication
   community.sap_libs.sap_hostctrl_exec:
     hostname: 192.168.8.15
@@ -133,21 +151,78 @@ EXAMPLES = r"""
         mSid: 'TST'
         mSystemNumber: '01'
       aOptions:
-        mTimeout: -1
+        mTimeout: -1 # -1=synchronous, 0=async, >0=wait timeout in seconds
         mSoftTimeout: 0
         mOptions:
           - O-INSTANCE
 
-- name: ListInstances using local Unix socket (requires become)
+- name: Synchronous StartDatabase using local Unix socket with arguments
   community.sap_libs.sap_hostctrl_exec:
-    function: ListInstances
+    function: StartDatabase
+    parameters:
+      aArguments:
+        item: "{{ dict_arguments | dict2items(key_name='mKey', value_name='mValue') }}"
+      aOptions:
+        mTimeout: -1
+  vars:
+    dict_arguments:
+      Database/Name: SYSTEMDB@XDH
+      Database/Type: hdb # hdb|ora|mss|db6|ada|sap|syb|ase|db2|max
+      # Database/InstanceName: HDB00 # the following parameters are optional
+      # Database/Host: mydbhost.example.com
+      # Database/Username: SYSTEM
+      # Database/Password: StarWarsFTW123!
   become: true
 
-- name: ListInstances using local Unix socket as SAP admin user
+- name: Example of GetDatabaseStatus
   community.sap_libs.sap_hostctrl_exec:
-    function: ListInstances
+    function: GetDatabaseStatus
+    parameters:
+      aArguments:
+        item: "{{ dict_arguments | dict2items(key_name='mKey', value_name='mValue') }}"
+  vars:
+    dict_arguments:
+      Database/Name: XDH
+      Database/Type: hdb
   become: true
-  become_user: "{{ sap_sid | lower }}adm"
+
+# Example from https://help.sap.com/docs/host-agent/saphostcontrol-web-service-interface/executeoperation
+- name: Asynchronous ExecuteOperation
+  community.sap_libs.sap_hostctrl_exec:
+    function: ExecuteOperation
+    parameters:
+      aOperation: "sayhello"
+      aArguments:
+        item:
+          mKey: "MY_NAME"
+          mValue: "Sally"
+  register: operation_say_hello
+  become: true
+
+- name: Check results of previous ExecuteOperation
+  community.sap_libs.sap_hostctrl_exec:
+    function: GetOperationResults
+    parameters:
+      aOperationID: "{{ operation_say_hello.out[0].mOperationID }}"
+      aOptions:
+        mTimeout: -1
+  become: true
+
+# Output of GetOperationResults for the above ExecuteOperation :
+#
+# changed: true
+# error: ""
+# msg: Succesful execution of: GetOperationResults
+# out:
+#   - mOperationID: "42010A3F050B1FD0B5A26EF66B9FA7B7"
+#     mOperationResults: 
+#       item:
+#         - mMessageKey: description
+#           mMessageValue: Say hello
+#         - mMessageKey: null
+#           mMessageValue: "\"hello Sally\""
+#         - mMessageKey: exitcode
+#           mMessageValue: 0
 """
 
 RETURN = r'''
