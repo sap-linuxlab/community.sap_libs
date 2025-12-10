@@ -136,3 +136,11 @@ releases:
       release_summary: This release removes `Python 2` support and updates `ansible-test` workflow to validate latest versions.
         Documentation was updated to reflect supported and tested versions. 
     release_date: '2025-09-25'
+  1.6.0:
+    changes:
+      minor_changes:
+        - sap_control_exec - Add local socket support (https://github.com/sap-linuxlab/community.sap_libs/pull/66)
+        - sap_hostctrl_exec - Add new module and tests (https://github.com/sap-linuxlab/community.sap_libs/pull/67) 
+      release_summary: This release adds new module `sap_hostctrl_exec` that allows executing `SAPHostcontrol` functions.
+        New contributors readme is added to show our appreciation to contributors. 
+    release_date: '2025-12-10'

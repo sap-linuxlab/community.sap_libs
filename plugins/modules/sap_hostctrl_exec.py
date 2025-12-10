@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 # Copyright: (c) 2022, Rainer Leber rainerleber@gmail.com, rainer.leber@sva.de,
-#                      Robert Kraemer @rkpobe, robert.kraemer@sva.de
+#                      Robert Kraemer @rkpobe, robert.kraemer@sva.de,
+#                      Yannick Douvry, ydouvry@oxya.com
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,28 +17,23 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: sap_control_exec
+module: sap_hostctrl_exec
 
-short_description: Ansible Module to execute SAPCONTROL
+short_description: Ansible Module to execute SAPHostControl
 
-version_added: "1.1.0"
+version_added: "1.6.0"
 
 description:
-    - Provides support for sapstartsrv formaly known as sapcontrol
-    - A complete information of all functions and the parameters can be found here
-      U(https://www.sap.com/documents/2016/09/0a40e60d-8b7c-0010-82c7-eda71af511fa.html)
-    - When hostname is 'localhost', sysnr is set and no username/password are provided, the module will attempt
+    - Provides support for SAP Host Agent
+    - More information of some functions can be found here
+      U(https://help.sap.com/docs/host-agent/saphostcontrol-web-service-interface)
+    - When hostname is 'localhost' and no username/password are provided, the module will attempt
       to use local Unix socket authentication (which works with 'become' privilege escalation).
 
 options:
-    sysnr:
-        description:
-            - The system number of the instance.
-        required: false
-        type: str
     port:
         description:
-            - The port number of the sapstartsrv.
+            - The port number of the sapstartsrv (usually 1128 and 1129).
             - If provided, the module will use always use http connection instead of local socket.
         required: false
         type: int
@@ -60,80 +56,55 @@ options:
         type: str
     function:
         description:
-        - The function to execute.
+            - The function to execute.
         required: true
         choices:
-        - Start
-        - Stop
-        - Shutdown
-        - InstanceStart
-        - InstanceStop
-        - Bootstrap
-        - ParameterValue
-        - GetProcessList
-        - GetProcessList2
-        - GetStartProfile
-        - GetTraceFile
-        - GetAlertTree
-        - GetAlerts
-        - RestartService
-        - StopService
-        - GetEnvironment
-        - ListDeveloperTraces
-        - ListLogFiles
-        - ReadDeveloperTrace
-        - ReadLogFile
-        - AnalyseLogFile
-        - ConfigureLogFileList
-        - GetLogFileList
-        - RestartInstance
-        - SendSignal
-        - GetVersionInfo
-        - GetQueueStatistic
-        - GetInstanceProperties
-        - OSExecute
-        - AnalyseLogFiles
-        - GetAccessPointList
-        - GetSystemInstanceList
-        - StartSystem
-        - StopSystem
-        - RestartSystem
-        - AccessCheck
-        - GetProcessParameter
-        - SetProcessParameter
-        - SetProcessParameter2
-        - ShmDetach
-        - CreateSnapshot
-        - ReadSnapshot
-        - ListSnapshots
-        - DeleteSnapshots
-        - RequestLogonFile
-        - GetNetworkId
-        - GetSecNetworkId
-        - UpdateSystem
-        - GetSystemUpdateList
-        - UpdateSCSInstance
-        - ABAPReadSyslog
-        - ABAPReadRawSyslog
-        - ABAPGetWPTable
-        - ABAPAcknoledgeAlerts
-        - CMGetThreadList
-        - ICMGetConnectionList
-        - ICMGetCacheEntries
-        - ICMGetProxyConnectionList
-        - WebDispGetServerList
-        - WebDispGetGroupList
-        - WebDispGetVirtHostList
-        - WebDispGeUrlPrefixList
-        - EnqGetLockTable
-        - EnqRemoveLocks
-        - EnqGetStatistic
+            - ACOSPrepare
+            - AttachDatabase
+            - CallServiceOperation
+            - CancelOperation
+            - ConfigureOutsideDiscovery
+            - ConfigureOutsideDiscoveryDestination
+            - ConfigureOutsideDiscoveryPath
+            - DeployConfiguration
+            - DeployManagedObjectsFromSAR
+            - DetachDatabase
+            - DetectManagedObjects
+            - ExecuteDatabaseOperation
+            - ExecuteInstallationProcedure
+            - ExecuteOperation
+            - ExecuteOutsideDiscovery
+            - ExecuteUpgradeProcedure
+            - FinalizeDatabaseCopy
+            - GetCIMObject
+            - GetComputerSystem
+            - GetDatabaseProperties
+            - GetDatabaseStatus
+            - GetDatabaseSystemStatus
+            - GetIpAddressProperties
+            - GetOperationResults
+            - ListDatabases
+            - ListDatabaseSystems
+            - ListInstances
+            - LiveDatabaseUpdate
+            - PrepareDatabaseCopy
+            - RegisterInstanceService
+            - SetDatabaseProperty
+            - StartDatabase
+            - StartInstance
+            - StopDatabase
+            - StopInstance
+            - UnregisterInstanceService
         type: str
-    parameter:
+    parameters:
         description:
-            - The parameter to pass to the function.
+            - A dictionary containing all the parameters to pass to the function.
+            - This option is mandatory for most of the functions, only a few like ListInstances or ListDatabases can be run without option.
+            - Be careful, no validation is done by this module regarding the suboptions.
+            - An analysis of the WSDL file must be done to provide correct parameters.
+            - See also the examples section for more appreciation.
         required: false
-        type: str
+        type: dict
     force:
         description:
             - Forces the execution of the function C(Stop).
@@ -143,44 +114,116 @@ options:
 author:
     - Rainer Leber (@RainerLeber)
     - Robert Kraemer (@rkpobe)
+    - Yannick Douvry (@ydouvry)
 notes:
     - Does not support C(check_mode).
 '''
 
+
 EXAMPLES = r"""
-- name: GetProcessList with sysnr
-  community.sap_libs.sap_control_exec:
+- name: ListDatabases with custom host and port
+  community.sap_libs.sap_hostctrl_exec:
     hostname: 192.168.8.15
-    sysnr: "01"
-    function: GetProcessList
+    function: ListDatabases
+    port: 1128
 
-- name: GetProcessList with custom port
-  community.sap_libs.sap_control_exec:
-    hostname: 192.168.8.15
-    function: GetProcessList
-    port: 50113
-
-- name: ParameterValue with authentication
-  community.sap_libs.sap_control_exec:
-    hostname: 192.168.8.15
-    sysnr: "01"
-    username: hdbadm
-    password: test1234
-    function: ParameterValue
-    parameter: ztta
-
-- name: GetVersionInfo using local Unix socket (requires become)
-  community.sap_libs.sap_control_exec:
-    sysnr: "00"
-    function: GetVersionInfo
+- name: ListInstances using local Unix socket (requires become)
+  community.sap_libs.sap_hostctrl_exec:
+    function: ListInstances
   become: true
 
-- name: GetProcessList using local Unix socket as SAP admin user
-  community.sap_libs.sap_control_exec:
-    sysnr: "00"
-    function: GetProcessList
+- name: ListInstances using local Unix socket as SAP admin user and selector parameters
+  community.sap_libs.sap_hostctrl_exec:
+    function: ListInstances
+    parameters:
+      aSelector:
+        aInstanceStatus: S-INSTALLED # S-INSTALLED | S_RUNNING | S-STOPPED | S-LAST
   become: true
   become_user: "{{ sap_sid | lower }}adm"
+
+- name: StartInstance with authentication
+  community.sap_libs.sap_hostctrl_exec:
+    hostname: 192.168.8.15
+    username: tstadm
+    password: test1234
+    function: StartInstance
+    parameters:
+      aInstance:
+        mSid: 'TST'
+        mSystemNumber: '01'
+      aOptions:
+        mTimeout: -1 # -1=synchronous, 0=async, >0=wait timeout in seconds
+        mSoftTimeout: 0
+        mOptions:
+          - O-INSTANCE
+
+- name: Synchronous StartDatabase using local Unix socket with arguments
+  community.sap_libs.sap_hostctrl_exec:
+    function: StartDatabase
+    parameters:
+      aArguments:
+        item: "{{ dict_arguments | dict2items(key_name='mKey', value_name='mValue') }}"
+      aOptions:
+        mTimeout: -1
+  vars:
+    dict_arguments:
+      Database/Name: SYSTEMDB@XDH
+      Database/Type: hdb # hdb|ora|mss|db6|ada|sap|syb|ase|db2|max
+      # Database/InstanceName: HDB00 # the following parameters are optional
+      # Database/Host: mydbhost.example.com
+      # Database/Username: SYSTEM
+      # Database/Password: StarWarsFTW123!
+  become: true
+
+- name: Example of GetDatabaseStatus
+  community.sap_libs.sap_hostctrl_exec:
+    function: GetDatabaseStatus
+    parameters:
+      aArguments:
+        item: "{{ dict_arguments | dict2items(key_name='mKey', value_name='mValue') }}"
+  vars:
+    dict_arguments:
+      Database/Name: XDH
+      Database/Type: hdb
+  become: true
+
+# Example from https://help.sap.com/docs/host-agent/saphostcontrol-web-service-interface/executeoperation
+- name: Asynchronous ExecuteOperation
+  community.sap_libs.sap_hostctrl_exec:
+    function: ExecuteOperation
+    parameters:
+      aOperation: "sayhello"
+      aArguments:
+        item:
+          mKey: "MY_NAME"
+          mValue: "Sally"
+  register: operation_say_hello
+  become: true
+
+- name: Check results of previous ExecuteOperation
+  community.sap_libs.sap_hostctrl_exec:
+    function: GetOperationResults
+    parameters:
+      aOperationID: "{{ operation_say_hello.out[0].mOperationID }}"
+      aOptions:
+        mTimeout: -1
+  become: true
+
+# Output of GetOperationResults for the above ExecuteOperation :
+#
+# changed: true
+# error: ""
+# msg: Succesful execution of: GetOperationResults
+# out:
+#   - mOperationID: "42010A3F050B1FD0B5A26EF66B9FA7B7"
+#     mOperationResults:
+#       item:
+#         - mMessageKey: description
+#           mMessageValue: Say hello
+#         - mMessageKey: null
+#           mMessageValue: "\"hello Sally\""
+#         - mMessageKey: exitcode
+#           mMessageValue: 0
 """
 
 RETURN = r'''
@@ -188,7 +231,7 @@ msg:
     description: Success-message with functionname.
     type: str
     returned: always
-    sample: 'Succesful execution of: GetProcessList'
+    sample: 'Succesful execution of: ListInstances'
 out:
     description: The full output of the required function.
     type: list
@@ -197,33 +240,17 @@ out:
     sample: [{
             "item": [
                 {
-                    "description": "MessageServer",
-                    "dispstatus": "SAPControl-GREEN",
-                    "elapsedtime": "412:30:50",
-                    "name": "msg_server",
-                    "pid": 70643,
-                    "starttime": "2022 03 13 15:22:42",
-                    "textstatus": "Running"
+                    "mHostname": "test-vm-001",
+                    "mSapVersionInfo": "793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb",
+                    "mSid": "TST",
+                    "mSystemNumber": "01"
                 },
                 {
-                    "description": "EnqueueServer",
-                    "dispstatus": "SAPControl-GREEN",
-                    "elapsedtime": "412:30:50",
-                    "name": "enserver",
-                    "pid": 70644,
-                    "starttime": "2022 03 13 15:22:42",
-                    "textstatus": "Running"
-                },
-                {
-                    "description": "Gateway",
-                    "dispstatus": "SAPControl-GREEN",
-                    "elapsedtime": "412:30:50",
-                    "name": "gwrd",
-                    "pid": 70645,
-                    "starttime": "2022 03 13 15:22:42",
-                    "textstatus": "Running"
-                }
-                ]
+                    "mHostname": "test-vm-001",
+                    "mSapVersionInfo": "793, patch 200, commit ec1833e294d84a70c04c6a1b01fd1a493f5c72fb",
+                    "mSid": "TST",
+                    "mSystemNumber": "00"
+                }]
             }]
 '''
 
@@ -299,18 +326,13 @@ class LocalSocketHandler(HTTPHandler):
 
 
 def choices():
-    retlist = ["Start", "Stop", "Shutdown", "InstanceStart", "InstanceStop", "Bootstrap", "ParameterValue", "GetProcessList",
-               "GetProcessList2", "GetStartProfile", "GetTraceFile", "GetAlertTree", "GetAlerts", "RestartService",
-               "StopService", "GetEnvironment", "ListDeveloperTraces", "ListLogFiles", "ReadDeveloperTrace", "ReadLogFile",
-               "AnalyseLogFile", "ConfigureLogFileList", "GetLogFileList", "RestartInstance", "SendSignal", "GetVersionInfo",
-               "GetQueueStatistic", "GetInstanceProperties", "OSExecute", "AnalyseLogFiles", "GetAccessPointList",
-               "GetSystemInstanceList", "StartSystem", "StopSystem", "RestartSystem", "AccessCheck", "GetProcessParameter",
-               "SetProcessParameter", "SetProcessParameter2", "ShmDetach", "CreateSnapshot", "ReadSnapshot", "ListSnapshots",
-               "DeleteSnapshots", "RequestLogonFile", "GetNetworkId", "GetSecNetworkId", "UpdateSystem", "GetSystemUpdateList",
-               "UpdateSCSInstance", "ABAPReadSyslog", "ABAPReadRawSyslog", "ABAPGetWPTable", "ABAPAcknoledgeAlerts",
-               "CMGetThreadList", "ICMGetConnectionList", "ICMGetCacheEntries", "ICMGetProxyConnectionList",
-               "WebDispGetServerList", "WebDispGetGroupList", "WebDispGetVirtHostList", "WebDispGeUrlPrefixList",
-               "EnqGetLockTable", "EnqRemoveLocks", "EnqGetStatistic"]
+    retlist = ["ACOSPrepare", "AttachDatabase", "CallServiceOperation", "CancelOperation", "ConfigureOutsideDiscovery",
+               "ConfigureOutsideDiscoveryDestination", "ConfigureOutsideDiscoveryPath", "DeployConfiguration", "DeployManagedObjectsFromSAR",
+               "DetachDatabase", "DetectManagedObjects", "ExecuteDatabaseOperation", "ExecuteInstallationProcedure", "ExecuteOperation",
+               "ExecuteOutsideDiscovery", "ExecuteUpgradeProcedure", "FinalizeDatabaseCopy", "GetCIMObject", "GetComputerSystem",
+               "GetDatabaseProperties", "GetDatabaseStatus", "GetDatabaseSystemStatus", "GetIpAddressProperties", "GetOperationResults",
+               "ListDatabases", "ListDatabaseSystems", "ListInstances", "LiveDatabaseUpdate", "PrepareDatabaseCopy", "RegisterInstanceService",
+               "SetDatabaseProperty", "StartDatabase", "StartInstance", "StopDatabase", "StopInstance", "UnregisterInstanceService"]
     return retlist
 
 
@@ -334,16 +356,16 @@ def recursive_dict(suds_object):
     return out
 
 
-def connection(hostname, port, username, password, function, parameter, sysnr=None, use_local=False):
-    if use_local and sysnr is not None:
+def connection(hostname, port, username, password, function, parameters, use_local=False):
+    if use_local:
         # Use Unix domain socket for local connection
-        unix_socket = "/tmp/.sapstream5{0}13".format(str(sysnr).zfill(2))
+        unix_socket = "/tmp/.sapstream1128"
 
         # Check if socket exists
         if not os.path.exists(unix_socket):
             raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
 
-        url = "http://localhost/sapcontrol?wsdl"
+        url = "http://localhost/SAPHostControl/?wsdl"
 
         try:
             localsocket = LocalSocketHttpAuthenticated(unix_socket)
@@ -352,16 +374,12 @@ def connection(hostname, port, username, password, function, parameter, sysnr=No
             raise Exception("Failed to connect via Unix socket: {0}".format(str(e)))
     else:
         # Use HTTP connection (original behavior)
-        url = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
+        url = 'http://{0}:{1}/SAPHostControl/?wsdl'.format(hostname, port)
         client = Client(url, username=username, password=password)
 
     _function = getattr(client.service, function)
-    if parameter is not None:
-        result = _function(parameter)
-    elif function == "StartSystem":
-        result = _function(waittimeout=0)
-    elif function == "StopSystem" or function == "RestartSystem":
-        result = _function(waittimeout=0, softtimeout=0)
+    if parameters is not None:
+        result = _function(**parameters)
     else:
         result = _function()
 
@@ -371,30 +389,25 @@ def connection(hostname, port, username, password, function, parameter, sysnr=No
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            sysnr=dict(type='str', required=False),
             port=dict(type='int', required=False),
             username=dict(type='str', required=False),
             password=dict(type='str', no_log=True, required=False),
             hostname=dict(type='str', default="localhost"),
             function=dict(type='str', required=True, choices=choices()),
-            parameter=dict(type='str', required=False),
+            parameters=dict(type='dict', required=False),
             force=dict(type='bool', default=False),
         ),
-        # Remove strict requirements to allow local mode
-        required_one_of=[('sysnr', 'port')],
-        mutually_exclusive=[('sysnr', 'port')],
         supports_check_mode=False,
     )
     result = dict(changed=False, msg='', out={}, error='')
     params = module.params
 
-    sysnr = params['sysnr']
     port = params['port']
     username = params['username']
     password = params['password']
     hostname = params['hostname']
     function = params['function']
-    parameter = params['parameter']
+    parameters = params['parameters']
     force = params['force']
 
     if not HAS_SUDS_LIBRARY:
@@ -403,13 +416,7 @@ def main():
             exception=SUDS_LIBRARY_IMPORT_ERROR)
 
     # Validate arguments
-    if sysnr is None and port is None:
-        module.fail_json(msg="Either 'sysnr' or 'port' must be provided")
-
-    if sysnr is not None and port is not None:
-        module.fail_json(msg="'sysnr' and 'port' are mutually exclusive")
-
-    if function == "Stop":
+    if function == "StopDatabase" or function == "StopInstance":
         if force is False:
             module.fail_json(msg="Stop function requires force: True")
 
@@ -417,25 +424,24 @@ def main():
     # Use local if hostname is localhost and no username/password provided
     use_local = (hostname == "localhost" and
                  username is None and
-                 password is None and
-                 sysnr is not None)
+                 password is None)
 
     if port is None:
         try:
             if use_local:
                 # Try local connection first
-                conn = connection(hostname, None, username, password, function, parameter, sysnr, use_local=True)
+                conn = connection(hostname, None, username, password, function, parameters, use_local=True)
             else:
                 # Try HTTP ports
                 try:
-                    conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
+                    conn = connection(hostname, "1129", username, password, function, parameters)
                 except Exception:
-                    conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
+                    conn = connection(hostname, "1128", username, password, function, parameters)
         except Exception as err:
             result['error'] = str(err)
     else:
         try:
-            conn = connection(hostname, port, username, password, function, parameter, sysnr, use_local=False)
+            conn = connection(hostname, port, username, password, function, parameters, use_local=False)
         except Exception as err:
             result['error'] = str(err)
 
