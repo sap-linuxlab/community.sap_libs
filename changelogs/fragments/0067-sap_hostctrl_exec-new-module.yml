@@ -1,0 +1,2 @@
+major_changes:
+  - sap_hostctrl_exec - new module to execute SapHostControl operations
