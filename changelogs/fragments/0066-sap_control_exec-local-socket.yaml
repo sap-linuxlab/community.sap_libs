@@ -1,3 +1,0 @@
-minor_changes:
-      - 'sap_control_exec - Added support for local socket connection when hostname is
-        localhost and sysnr is provided without username/password.'

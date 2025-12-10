@@ -4,6 +4,20 @@ Community SAP Release Notes
 
 .. contents:: Topics
 
+v1.6.0
+======
+
+Release Summary
+---------------
+
+This release adds new module `sap_hostctrl_exec` that allows executing `SAPHostcontrol` functions.
+New contributors readme is added to show our appreciation to contributors.
+
+Minor Changes
+-------------
+- sap_control_exec - Add local socket support (https://github.com/sap-linuxlab/community.sap_libs/pull/66)
+- sap_hostctrl_exec - Add new module and tests (https://github.com/sap-linuxlab/community.sap_libs/pull/67)
+
 v1.5.0
 ======
 
