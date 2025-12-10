@@ -92,7 +92,7 @@ modules where we are able to execute integration test we decided to disable thes
 You can find more information about maintainers of this Ansible Collection at [MAINTAINERS.md](https://github.com/sap-linuxlab/community.sap_libs/blob/main/MAINTAINERS.md).
 
 ## Contributing
-You can find more information about ways you can contribute at [sap-linuxlab website](https://sap-linuxlab.github.io/initiative_contributions/).
+We welcome contributions to this collection. For a list of all contributors and information on how you can get involved, please see our [CONTRIBUTORS document](./CONTRIBUTORS.md).
 
 ## Support
 You can report any issues using [Issues](https://github.com/sap-linuxlab/community.sap_libs/issues) section.
