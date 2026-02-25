@@ -98,7 +98,8 @@ def get_all_nw_sid():
     if os.path.isdir("/sapmnt"):
         # /sapmnt directory exists
         for sid in os.listdir('/sapmnt'):
-            if os.path.isdir("/usr/sap/" + sid):
+            # Iterate over directories and filter out those owned by root (e.g. lost+found).
+            if os.path.isdir("/usr/sap/" + sid) and os.stat("/usr/sap/" + sid).st_uid != 0:
                 nw_sid = nw_sid + [sid]
             else:
                 # Check to see if /sapmnt/SID/sap_bobj exists
