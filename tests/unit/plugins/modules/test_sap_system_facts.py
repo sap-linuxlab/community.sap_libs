@@ -25,7 +25,7 @@ class Testsap_system_facts(ModuleTestCase):
         """Setup."""
         super(Testsap_system_facts, self).setUp()
         self.module = sap_system_facts
-       
+
         # Mock get_bin_path
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()
@@ -55,7 +55,7 @@ class Testsap_system_facts(ModuleTestCase):
                 with self.assertRaises(AnsibleExitJson) as result:
                     with set_module_args({}):
                         self.module.main()
-        
+
         # Check that ansible_facts is empty or doesn't have 'sap'
         self.assertEqual(result.exception.args[0]['ansible_facts'], {})
 

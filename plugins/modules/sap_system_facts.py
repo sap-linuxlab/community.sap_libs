@@ -182,8 +182,6 @@ def get_hana_nr(sids, module):
                         'TYPE': 'HDB',
                         'InstanceType': 'HANA'
                     })
-                else:
-                    continue
 
     return hana_list
 
@@ -222,8 +220,6 @@ def get_nw_nr(sids, module):
                             # split instance number
                             type = type_raw[:-2]
                             nw_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': get_instance_type(type), 'InstanceType': 'NW'})
-                    else:
-                        continue
 
     return nw_list
 
