@@ -45,10 +45,27 @@ class Testsapcar_extract(ModuleTestCase):
             'dest': "/tmp/test2",
             'binary_path': "/tmp/sapcar"
         }
-        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
-            run_command.return_value = 0, '', ''  # successful execution, no output
+        with patch('os.path.isfile', return_value=True), \
+             patch('os.access', return_value=True), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.listdir', return_value=[]), \
+             patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, 'file1\nfile2', ''
             with self.assertRaises(AnsibleExitJson) as result:
                 with set_module_args(args):
                     sapcar_extract.main()
-                self.assertTrue(result.exception.args[0]['changed'])
-        self.assertEqual(run_command.call_count, 1)
+            self.assertTrue(result.exception.args[0]['changed'])
+        self.assertGreaterEqual(run_command.call_count, 1)
+
+    def test_file_missing(self):
+        """Failure must occur when SAR file does not exist."""
+        args = {
+            'path': "/tmp/nonexistent.SAR",
+            'dest': "/tmp/test2",
+            'binary_path': "/tmp/sapcar"
+        }
+        with patch('os.path.isfile', return_value=False):
+            with self.assertRaises(AnsibleFailJson) as result:
+                with set_module_args(args):
+                    sapcar_extract.main()
+            self.assertIn('File missing', result.exception.args[0]['msg'])

@@ -231,15 +231,19 @@ def main():
         if not check_mode:
             (rc, out, err) = module.run_command(command, check_rc=True)
         changed = True
+        msg = "Files extracted to {0}".format(dest)
+        if params['overwrite']:
+            msg += " (overwrite mode enabled)"
 
     else:
         changed = False
-        out = "Expected file names were found in {0} folder. No extraction needed.".format(dest)
+        msg = "Expected file names were found in {0}. No extraction needed.".format(dest)
+        out = ""
 
     if params['remove']:
         os.remove(params['path'])
 
-    module.exit_json(changed=changed, message=rc, stdout=out,
+    module.exit_json(changed=changed, msg=msg, stdout=out,
                      stderr=err, command=' '.join(command))
 
 
