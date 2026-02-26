@@ -50,7 +50,8 @@ class TestSapcontrolModule(ModuleTestCase):
                 self.module.main()
         self.assertEqual(result.exception.args[0]['exception'], 'Module not found')
 
-    def test_error_connection(self):
+    @patch('ansible_collections.community.sap_libs.plugins.module_utils.sapcontrol_soap.Client')
+    def test_error_connection(self, mock_client):
         """tests fail module exception"""
 
         args = {
@@ -58,7 +59,7 @@ class TestSapcontrolModule(ModuleTestCase):
             "function": "ListInstances"
         }
         with self.assertRaises(AnsibleFailJson) as result:
-            self.module.Client.side_effect = Mock(side_effect=Exception('Test'))
+            mock_client.side_effect = Mock(side_effect=Exception('Test'))
             with set_module_args(args):
                 self.module.main()
         error_msg = result.exception.args[0]['msg']
