@@ -128,7 +128,7 @@ class Testsap_hdbsql(ModuleTestCase):
             'query': ["UPDATE users SET name='test';"]
         }
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
-            run_command.return_value = 0, '', '' # Updates often return empty string
+            run_command.return_value = 0, '', ''  # Updates often return empty string
             with self.assertRaises(AnsibleExitJson) as result:
                 with set_module_args(args):
                     self.module.main()
@@ -178,7 +178,7 @@ class Testsap_hdbsql(ModuleTestCase):
             with self.assertRaises(AnsibleExitJson):
                 with set_module_args(args):
                     self.module.main()
-            
+
             # Get the actual command executed
             executed_cmd = run_command.call_args[0][0]
             self.assertIn('-e', executed_cmd)

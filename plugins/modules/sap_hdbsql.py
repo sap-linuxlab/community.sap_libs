@@ -76,14 +76,10 @@ options:
         type: list
         elements: str
 notes:
-    - Does not support C(check_mode). Always reports that the state has changed even if no changes have been made.  
-    - Logic for C(changed): If C(filepath) is used, C(changed) is always true. If C(query) is used, 
-      C(changed) is true only if at least one query is not a C(SELECT) statement.
-    - B(Environment Note:) Avoid using login shell flags (like V(become_flags: "-i") or V(become_flags: "-")) 
-      when V(become_user) is a SAP admin user. These flags load SAP-specific environment variables that 
-      can corrupt the Python path, leading to V(ModuleNotFoundError). 
-    - If you must use a login shell, ensure you reset the environment in your task with 
-      V(environment: { PYTHONPATH: "", LD_LIBRARY_PATH: "" }).
+    - Does not support C(check_mode).
+    - If filepath is used, changed is true. If query is used, changed is true if it is not a SELECT.
+    - Avoid using login shell flags (like 'become_flags' with value of '-i') when become_user is a SAP admin.
+    - If a login shell is required, manually reset the environment in the task using the environment keyword.
 author:
     - Rainer Leber (@rainerleber)
 '''
@@ -172,6 +168,7 @@ def csv_to_list(raw_csv):
     reader = [dict((to_native(k), to_native(v).strip()) for k, v in row.items()) for row in reader_raw]
     return list(reader)
 
+
 def run_hdb_command(module, full_cmd):
     rc, out_raw, err = module.run_command(full_cmd)
 
@@ -191,6 +188,7 @@ def run_hdb_command(module, full_cmd):
             module.fail_json(msg="SQL Execution Error", rc=rc, stderr=err, cmd=full_cmd)
 
     return out_raw
+
 
 def main():
     module = AnsibleModule(
@@ -237,7 +235,7 @@ def main():
             module.fail_json(msg="Parameter 'sid' is required to determine default bin_path if 'bin_path' is not provided.")
 
         bin_path = "/usr/sap/{sid}/HDB{instance}/exe/hdbsql".format(
-            sid=params['sid'].upper(), 
+            sid=params['sid'].upper(),
             instance=params['instance']
         )
 
@@ -290,6 +288,7 @@ def main():
                 module.fail_json(msg="Failed to parse output from file {0}: {1}".format(p, to_native(e)))
 
     module.exit_json(changed=has_changed, query_result=output)
+
 
 if __name__ == '__main__':
     main()
