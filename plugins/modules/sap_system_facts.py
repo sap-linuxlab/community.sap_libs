@@ -270,7 +270,7 @@ def run_module():
     # Fail if execution user does not have permission for sapcontrol
     sapcontrol_path = module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)
     if not os.access(sapcontrol_path, os.X_OK):
-        module.fail_json(msg=f"Permission denied: Ansible user cannot execute {sapcontrol_path}")
+        module.fail_json(msg="Permission denied: Ansible user cannot execute {0}".format(sapcontrol_path))
 
     hana_sid = get_all_hana_sid()
     if hana_sid:
