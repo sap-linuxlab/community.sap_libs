@@ -29,6 +29,8 @@ author:
 
 notes:
     - Supports C(check_mode).
+    - The user executing the module must have execute permissions for C(/usr/sap/hostctrl/exe/sapcontrol).
+    - Only directories matching SAP SID and Instance naming conventions are scanned.
 '''
 
 EXAMPLES = r'''
@@ -84,57 +86,133 @@ import re
 
 def get_all_hana_sid():
     hana_sid = list()
-    if os.path.isdir("/hana/shared"):
-        # /hana/shared directory exists
-        for sid in os.listdir('/hana/shared'):
-            if os.path.isdir("/usr/sap/" + sid):
-                hana_sid = hana_sid + [sid]
-    if hana_sid:
-        return hana_sid
+
+    # Expected SID pattern: 3 character in specific pattern (e.g., ABC, D01, etc.)
+    sid_pattern = re.compile(r'^[A-Z][A-Z0-9][A-Z0-9]$')
+
+    shared_path = "/hana/shared"
+    
+    if is_accessible_dir(shared_path):
+        try:
+            for sid in os.listdir(shared_path):
+                if not sid_pattern.match(sid):
+                    continue
+                
+                target_path = os.path.join("/usr/sap", sid)
+                
+                try:
+                    if is_accessible_dir(target_path):
+                        hana_sid.append(sid)
+                except OSError:
+                    # Individual SID folder is problematic, move to next
+                    continue
+
+        except OSError:
+            # Entire shared_path is inaccessible
+            pass
+
+    return hana_sid
 
 
 def get_all_nw_sid():
     nw_sid = list()
-    if os.path.isdir("/sapmnt"):
-        # /sapmnt directory exists
-        for sid in os.listdir('/sapmnt'):
-            if os.path.isdir("/usr/sap/" + sid):
-                nw_sid = nw_sid + [sid]
-            else:
-                # Check to see if /sapmnt/SID/sap_bobj exists
-                if os.path.isdir("/sapmnt/" + sid + "/sap_bobj"):
-                    # is a bobj system
-                    nw_sid = nw_sid + [sid]
-    if nw_sid:
-        return nw_sid
+
+    # Expected SID pattern with only 3 character in specific pattern (e.g., ABC, D01, etc.)
+    sid_pattern = re.compile(r'^[A-Z][A-Z0-9][A-Z0-9]$')
+
+    sapmnt_path = "/sapmnt"
+    
+    if is_accessible_dir(sapmnt_path):
+        try:
+            for sid in os.listdir(sapmnt_path):
+                if not sid_pattern.match(sid):
+                    continue
+
+                target_path = os.path.join("/usr/sap", sid)
+
+                try:
+                    if is_accessible_dir(target_path):
+                        nw_sid.append(sid)
+                    else:
+                        # Check to see if /sapmnt/SID/sap_bobj exists and is accessible
+                        bobj_path = os.path.join(sapmnt_path, sid, "sap_bobj")
+                        if is_accessible_dir(bobj_path):
+                            nw_sid.append(sid)
+                except OSError:
+                    # Individual SID folder is problematic, move to next
+                    continue
+
+        except OSError:
+            # Entire shared_path is inaccessible
+            pass
+
+    return nw_sid
 
 
 def get_hana_nr(sids, module):
     hana_list = list()
+
+    # Expected Instance pattern: HDB followed by exactly 2 digits (e.g., HDB00, HDB01, etc.)
+    instance_pattern = re.compile(r'^HDB(\d{2})$')
+
+    sapcontrol_path = module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)
+
     for sid in sids:
-        for instance in os.listdir('/usr/sap/' + sid):
-            if 'HDB' in instance:
-                instance_nr = instance[-2:]
-                # check if instance number exists
-                command = [module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)]
+        path = os.path.join('/usr/sap', sid)
+
+        if not is_accessible_dir(path):
+            continue
+
+        for instance in os.listdir(path):
+            match = instance_pattern.match(instance)
+            if match:
+                # 'match.group(1)' is the 2 digits captured by (\d{2})
+                instance_nr = match.group(1)
+
+                command = [sapcontrol_path]
                 command.extend(['-nr', instance_nr, '-function', 'GetProcessList'])
+
                 check_instance = module.run_command(command, check_rc=False)
-                # sapcontrol returns c(0 - 5) exit codes only c(1) is unavailable
+
+                # sapcontrol returns (0-5) exit codes; (1) usually means unavailable
                 if check_instance[0] != 1:
-                    hana_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': 'HDB', 'InstanceType': 'HANA'})
+                    hana_list.append({
+                        'NR': instance_nr, 
+                        'SID': sid, 
+                        'TYPE': 'HDB', 
+                        'InstanceType': 'HANA'
+                    })
+                else:
+                    continue
+
     return hana_list
 
 
 def get_nw_nr(sids, module):
     nw_list = list()
+
+    # Expected Instance pattern: letters followed by exactly 2 digits (e.g., ASCS00, D01)
+    # Excludes 'SYS', 'exe', 'hdbclient', etc.
+    instance_pattern = re.compile(r'^[a-zA-Z]+(\d{2})$')
+
+    sapcontrol_path = module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)
     type = ""
+
     for sid in sids:
-        for instance in os.listdir('/usr/sap/' + sid):
-            instance_nr = instance[-2:]
-            command = [module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)]
-            # check if returned instance_nr is a number because sapcontrol returns all if a random string is provided
-            if instance_nr.isdigit():
+        path = os.path.join('/usr/sap', sid)
+
+        if not is_accessible_dir(path):
+            continue
+
+        for instance in os.listdir(path):
+            match = instance_pattern.match(instance)
+            if match:
+                # 'match.group(1)' is the 2 digits captured by (\d{2})
+                instance_nr = match.group(1)
+
+                command = [sapcontrol_path]
                 command.extend(['-nr', instance_nr, '-function', 'GetInstanceProperties'])
+
                 check_instance = module.run_command(command, check_rc=False)
                 if check_instance[0] != 1:
                     for line in check_instance[1].splitlines():
@@ -144,6 +222,9 @@ def get_nw_nr(sids, module):
                             # split instance number
                             type = type_raw[:-2]
                             nw_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': get_instance_type(type), 'InstanceType': 'NW'})
+                    else:
+                        continue
+
     return nw_list
 
 
@@ -172,6 +253,10 @@ def get_instance_type(raw_type):
     return type
 
 
+def is_accessible_dir(path):
+    return os.path.isdir(path) and os.access(path, os.R_OK)
+
+
 def run_module():
     module_args = dict()
     system_result = list()
@@ -186,6 +271,11 @@ def run_module():
         supports_check_mode=True,
     )
 
+    # Fail if execution user does not have permission for sapcontrol
+    sapcontrol_path = module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)
+    if not os.access(sapcontrol_path, os.X_OK):
+        module.fail_json(msg=f"Permission denied: Ansible user cannot execute {sapcontrol_path}")
+
     hana_sid = get_all_hana_sid()
     if hana_sid:
         system_result = system_result + get_hana_nr(hana_sid, module)
@@ -194,10 +284,13 @@ def run_module():
     if nw_sid:
         system_result = system_result + get_nw_nr(nw_sid, module)
 
+
     if system_result:
         result['ansible_facts'] = {'sap': system_result}
+        result['msg'] = "SAP System facts were collected."
     else:
-        result['ansible_facts']
+        result['ansible_facts'] 
+        result['msg'] = "No running SAP instances found or Ansible user cannot access them."
 
     if module.check_mode:
         module.exit_json(**result)
