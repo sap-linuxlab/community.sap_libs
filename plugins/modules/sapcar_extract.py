@@ -102,6 +102,34 @@ EXAMPLES = r"""
     signature: true
 """
 
+RETURN = r'''
+msg:
+    description: Status message about the extraction operation.
+    type: str
+    returned: always
+    sample: "Files extracted to /tmp/test2 (overwrite mode enabled)"
+stdout:
+    description: Standard output from the SAPCAR command.
+    type: str
+    returned: always
+    sample: "SAPCAR: processing archive /tmp/hana.sar (version 2.01)\\nfile1\\nfile2"
+stderr:
+    description: Standard error from the SAPCAR command.
+    type: str
+    returned: always
+    sample: ""
+command:
+    description: The full SAPCAR command that was executed.
+    type: str
+    returned: always
+    sample: "/tmp/sapcar -xvf /tmp/hana.sar -R /tmp/test2"
+changed:
+    description: Whether the module made changes.
+    type: bool
+    returned: always
+    sample: true
+'''
+
 import os
 from tempfile import NamedTemporaryFile
 from ansible.module_utils.basic import AnsibleModule
