@@ -91,15 +91,15 @@ def get_all_hana_sid():
     sid_pattern = re.compile(r'^[A-Z][A-Z0-9][A-Z0-9]$')
 
     shared_path = "/hana/shared"
-    
+
     if is_accessible_dir(shared_path):
         try:
             for sid in os.listdir(shared_path):
                 if not sid_pattern.match(sid):
                     continue
-                
+
                 target_path = os.path.join("/usr/sap", sid)
-                
+
                 try:
                     if is_accessible_dir(target_path):
                         hana_sid.append(sid)
@@ -121,7 +121,7 @@ def get_all_nw_sid():
     sid_pattern = re.compile(r'^[A-Z][A-Z0-9][A-Z0-9]$')
 
     sapmnt_path = "/sapmnt"
-    
+
     if is_accessible_dir(sapmnt_path):
         try:
             for sid in os.listdir(sapmnt_path):
@@ -177,9 +177,9 @@ def get_hana_nr(sids, module):
                 # sapcontrol returns (0-5) exit codes; (1) usually means unavailable
                 if check_instance[0] != 1:
                     hana_list.append({
-                        'NR': instance_nr, 
-                        'SID': sid, 
-                        'TYPE': 'HDB', 
+                        'NR': instance_nr,
+                        'SID': sid,
+                        'TYPE': 'HDB',
                         'InstanceType': 'HANA'
                     })
                 else:
@@ -284,12 +284,11 @@ def run_module():
     if nw_sid:
         system_result = system_result + get_nw_nr(nw_sid, module)
 
-
     if system_result:
         result['ansible_facts'] = {'sap': system_result}
         result['msg'] = "SAP System facts were collected."
     else:
-        result['ansible_facts'] 
+        result['ansible_facts']
         result['msg'] = "No running SAP instances found or Ansible user cannot access them."
 
     if module.check_mode:

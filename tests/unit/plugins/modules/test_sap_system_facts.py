@@ -25,9 +25,24 @@ class Testsap_system_facts(ModuleTestCase):
         """Setup."""
         super(Testsap_system_facts, self).setUp()
         self.module = sap_system_facts
+       
+        # Mock get_bin_path
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()
         self.addCleanup(self.mock_get_bin_path.stop)
+
+        # Mock os.access to always return True
+        self.mock_os_access = patch('ansible_collections.community.sap_libs.plugins.modules.sap_system_facts.os.access')
+        self.mock_access = self.mock_os_access.start()
+        self.mock_access.return_value = True
+        self.addCleanup(self.mock_os_access.stop)
+
+        # NEW: Mock os.path.isdir to return True for base paths
+        self.mock_os_isdir = patch('ansible_collections.community.sap_libs.plugins.modules.sap_system_facts.os.path.isdir')
+        self.mock_isdir = self.mock_os_isdir.start()
+        self.mock_isdir.return_value = True
+        self.addCleanup(self.mock_os_isdir.stop)
+
 
     def tearDown(self):
         """Teardown."""
@@ -35,10 +50,15 @@ class Testsap_system_facts(ModuleTestCase):
 
     def test_no_systems_available(self):
         """No SAP Systems"""
-        with self.assertRaises(AnsibleExitJson) as result:
-            with set_module_args({}):
-                self.module.main()
+        with patch.object(self.module, 'get_all_hana_sid', return_value=[]):
+            with patch.object(self.module, 'get_all_nw_sid', return_value=[]):
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args({}):
+                        self.module.main()
+        
+        # Check that ansible_facts is empty or doesn't have 'sap'
         self.assertEqual(result.exception.args[0]['ansible_facts'], {})
+
 
     def test_sap_system_facts_all(self):
         """Check that result is changed when all is one system."""
