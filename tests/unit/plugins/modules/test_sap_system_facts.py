@@ -43,7 +43,6 @@ class Testsap_system_facts(ModuleTestCase):
         self.mock_isdir.return_value = True
         self.addCleanup(self.mock_os_isdir.stop)
 
-
     def tearDown(self):
         """Teardown."""
         super(Testsap_system_facts, self).tearDown()
@@ -58,7 +57,6 @@ class Testsap_system_facts(ModuleTestCase):
 
         # Check that ansible_facts is empty or doesn't have 'sap'
         self.assertEqual(result.exception.args[0]['ansible_facts'], {})
-
 
     def test_sap_system_facts_all(self):
         """Check that result is changed when all is one system."""
