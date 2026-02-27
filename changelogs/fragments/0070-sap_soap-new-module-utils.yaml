@@ -1,4 +1,0 @@
-minor_changes:
-  - sapcontrol_soap - new module utils for SOAP client to refactor sap_control_exec and sap_hostctrl_exec modules
-  - sap_control_exec - updated to use new module utils module for SAP Control SOAP client
-  - sap_hostctrl_exec - updated to use new module utils module for SAP Host Control SOAP client

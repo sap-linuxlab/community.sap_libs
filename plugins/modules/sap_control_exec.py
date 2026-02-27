@@ -229,7 +229,7 @@ out:
 
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 
-from ..module_utils.sapcontrol_soap import (
+from ..module_utils.sapstartsrv_client import (
     HAS_SUDS_LIBRARY,
     SUDS_LIBRARY_IMPORT_ERROR,
     call_sap_control as connection,
