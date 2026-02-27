@@ -51,7 +51,7 @@ class TestSapcontrolModule(ModuleTestCase):
                 self.module.main()
         self.assertEqual(result.exception.args[0]['exception'], 'Module not found')
 
-    @patch('ansible_collections.community.sap_libs.plugins.module_utils.sapcontrol_soap.Client')
+    @patch('ansible_collections.community.sap_libs.plugins.module_utils.sapstartsrv_client.Client')
     def test_error_connection(self, mock_client):
         """tests fail module exception"""
 
