@@ -126,7 +126,7 @@ def connection(service_name, hostname, port, username, password, sysnr=None, use
         # Check if socket exists
         if not os.path.exists(unix_socket):
             raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
-        
+
         url = "http://localhost/{0}?wsdl".format(service_name)
 
         try:

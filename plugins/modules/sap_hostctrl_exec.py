@@ -137,7 +137,7 @@ EXAMPLES = r"""
     function: ListInstances
     parameters:
       aSelector:
-        aInstanceStatus: S-INSTALLED # S-INSTALLED | S_RUNNING | S-STOPPED | S-LAST
+        aInstanceStatus: S-INSTALLED # S-INSTALLED | S-RUNNING | S-STOPPED | S-LAST
   become: true
   become_user: "{{ sap_sid | lower }}adm"
 
