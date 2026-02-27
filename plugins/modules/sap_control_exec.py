@@ -314,30 +314,18 @@ def main():
         try:
             if use_local:
                 # Try local connection first
-                result_conn = connection(
-                    hostname, None, username, password, function, parameter,
-                    convert=False
-                )
+                result_conn = connection(hostname, None, username, password, function, parameter, sysnr=sysnr, use_local=True)
             else:
                 # Try HTTP ports
                 try:
-                    result_conn = connection(
-                        hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter,
-                        convert=False
-                    )
+                    result_conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
                 except Exception:
-                    result_conn = connection(
-                        hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter,
-                        convert=False
-                    )
+                    result_conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
         except Exception as err:
             result['error'] = str(err)
     else:
         try:
-            result_conn = connection(
-                hostname, port, username, password, function, parameter,
-                convert=False
-            )
+            result_conn = connection(hostname, port, username, password, function, parameter, sysnr, use_local=False)
         except Exception as err:
             result['error'] = str(err)
 
