@@ -62,6 +62,13 @@ options:
         description: Use encrypted connection.
         type: bool
         default: false
+    properties:
+        description:
+        - Sets SQLDBC connect options e.g. sqlMode=SAPR3
+        - Must be a string or list containing strings.
+        - See SAP HANA documentation for list of available options.
+        type: list
+        elements: str
     filepath:
         description:
         - One or more files each containing one SQL query to run.
@@ -142,6 +149,16 @@ EXAMPLES = r'''
     - select user_name from users
     - select * from users
     autocommit: False
+
+- name: Run query with SQLDBC connect options
+  community.sap_libs.sap_hdbsql:
+    sid: "hdb"
+    instance: "01"
+    password: "Test123"
+    query: select user_name from users
+    properties:
+      - "sqlMode=SAPR3"
+      - "sslHostNameInCertificate=hana.example.com"
 '''
 
 RETURN = r'''
@@ -205,6 +222,7 @@ def main():
             query=dict(type='list', elements='str', required=False),
             filepath=dict(type='list', elements='path', required=False),
             autocommit=dict(type='bool', default=True),
+            properties=dict(type='list', elements='str', required=False),
         ),
         required_one_of=[('query', 'filepath')],
         required_if=[('userstore', False, ['password'])],
@@ -259,6 +277,10 @@ def main():
 
     if params['database']:
         command.extend(['-d', params['database']])
+
+    if params['properties']:
+        for prop in params['properties']:
+            command.extend(['-Z', prop])
 
     if params['userstore']:
         command.extend(['-x', '-U', params['user']])
