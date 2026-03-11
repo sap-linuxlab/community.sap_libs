@@ -184,3 +184,23 @@ class Testsap_hdbsql(ModuleTestCase):
             self.assertIn('-e', executed_cmd)
             self.assertIn('-ssltrustcert', executed_cmd)
             self.assertIn('-sslcreatecert', executed_cmd)
+
+    def test_properties_command_args(self):
+        """Verify that properties are correctly added to the command"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "pwd",
+            'properties': ["key1=value1", "key2=value2"],
+            'query': ["SELECT 1 FROM DUMMY;"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, '1', ''
+            with self.assertRaises(AnsibleExitJson):
+                with set_module_args(args):
+                    self.module.main()
+
+            executed_cmd = run_command.call_args[0][0]
+            self.assertIn('-Z', executed_cmd)
+            self.assertIn('key1=value1', executed_cmd)
+            self.assertIn('key2=value2', executed_cmd)
