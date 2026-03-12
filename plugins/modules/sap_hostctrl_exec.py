@@ -261,6 +261,8 @@ from ..module_utils.sapstartsrv_client import (
     SUDS_LIBRARY_IMPORT_ERROR,
     recursive_dict,
     call_sap_hostctrl as connection,
+    is_read_only_function,
+    requires_force,
 )
 
 
@@ -288,7 +290,7 @@ def main():
         ),
         supports_check_mode=False,
     )
-    result = dict(changed=False, msg='', out={}, error='')
+    result = dict(changed=False, msg='', out=[], error='')  # Default out to list for consistent return type.
     params = module.params
 
     port = params['port']
@@ -305,47 +307,52 @@ def main():
             exception=SUDS_LIBRARY_IMPORT_ERROR)
 
     # Validate arguments
-    if function == "StopDatabase" or function == "StopInstance":
-        if force is False:
-            module.fail_json(msg="Stop function requires force: True")
+    if requires_force(function) and force is False:
+        module.fail_json(msg="Function '{0}' requires force: True".format(function))
 
     # Determine if we should use local Unix socket connection
-    # Use local if hostname is localhost and no username/password provided
-    use_local = (hostname == "localhost" and
+    # Use local socket connection if hostname is localhost and no username/password provided
+    # True: Socket connection, False: SOAP connection
+    is_socket = (hostname == "localhost" and
                  username is None and
                  password is None)
 
     if port is None:
         try:
-            if use_local:
-                # Try local connection first
-                result_conn = connection(hostname, None, username, password, function, parameters, use_local=True)
+            if is_socket:
+                result['connection_type'] = 'socket'
+                result['connection_url'] = "http://localhost/SAPHostControl/?wsdl"
+
+                result_conn = connection(hostname, None, username, password, function, parameters, is_socket=True)
             else:
-                # Try HTTP ports
+                result['connection_type'] = 'soap'
+
+                # Try HTTPS and HTTP ports
                 try:
+                    result['connection_url'] = 'http://{0}:1129/SAPHostControl/?wsdl'.format(hostname)
                     result_conn = connection(hostname, "1129", username, password, function, parameters)
                 except Exception:
+                    result['connection_url'] = 'http://{0}:1128/SAPHostControl/?wsdl'.format(hostname)
                     result_conn = connection(hostname, "1128", username, password, function, parameters)
         except Exception as err:
             result['error'] = str(err)
     else:
+        result['connection_type'] = 'soap'
+        result['connection_url'] = 'http://{0}:{1}/SAPHostControl/?wsdl'.format(hostname, port)
         try:
-            result_conn = connection(hostname, port, username, password, function, parameters, use_local=False)
+            result_conn = connection(hostname, port, username, password, function, parameters, is_socket=False)
         except Exception as err:
             result['error'] = str(err)
 
     if result['error'] != '':
-        connection_type = "Unix socket" if use_local else "SOAP API"
-        result['msg'] = 'Something went wrong connecting to the {0}.'.format(connection_type)
+        result['msg'] = 'Function execution has failed. See error for more details.'
         module.fail_json(**result)
 
-    if result_conn is not None:
-        returned_data = recursive_dict(result_conn)
-    else:
-        returned_data = result_conn
+    conn_result = result_conn
+    returned_data = recursive_dict(conn_result) if conn_result is not None else conn_result
 
-    result['changed'] = True
-    result['msg'] = "Succesful execution of: " + function
+    result['changed'] = not is_read_only_function(function)
+    result['msg'] = "Successful execution of function: " + function
     result['out'] = [returned_data]
 
     module.exit_json(**result)

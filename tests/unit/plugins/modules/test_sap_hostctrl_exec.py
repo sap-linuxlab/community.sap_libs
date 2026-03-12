@@ -31,13 +31,13 @@ class TestSapcontrolModule(ModuleTestCase):
         return mocker.patch(self.module.call_rfc_method)
 
     def test_without_required_parameters(self):
-        """Failure must occurs when all parameters are missing"""
+        """Fail when required parameters are missing."""
         with self.assertRaises(AnsibleFailJson):
             with set_module_args({}):
                 self.module.main()
 
     def test_error_module_not_found(self):
-        """tests fail module error"""
+        """Fail when SUDS library is not found during import."""
 
         args = {
             "hostname": "192.168.8.15",
@@ -52,7 +52,7 @@ class TestSapcontrolModule(ModuleTestCase):
 
     @patch('ansible_collections.community.sap_libs.plugins.module_utils.sapstartsrv_client.Client')
     def test_error_connection(self, mock_client):
-        """tests fail module exception"""
+        """Fail when there is a connection error."""
 
         args = {
             "hostname": "192.168.8.15",
@@ -63,14 +63,10 @@ class TestSapcontrolModule(ModuleTestCase):
             with set_module_args(args):
                 self.module.main()
         error_msg = result.exception.args[0]['msg']
-        expected_messages = [
-            'Something went wrong connecting to the SOAP API.',
-            'Something went wrong connecting to the Unix socket.'
-        ]
-        self.assertIn(error_msg, expected_messages)
+        self.assertEqual(error_msg, 'Function execution has failed. See error for more details.')
 
     def test_error_missing_force(self):
-        """tests fail missing force"""
+        """Fail when force parameter is missing."""
 
         args = {
             "hostname": "192.168.8.15",
@@ -80,10 +76,10 @@ class TestSapcontrolModule(ModuleTestCase):
         with self.assertRaises(AnsibleFailJson) as result:
             with set_module_args(args):
                 self.module.main()
-        self.assertEqual(result.exception.args[0]['msg'], 'Stop function requires force: True')
+        self.assertEqual(result.exception.args[0]['msg'], "Function 'StopInstance' requires force: True")
 
     def test_success_list_instances(self):
-        """test success with ListInstances"""
+        """Test successful execution of ListInstances."""
 
         args = {
             "hostname": "192.168.8.15",
@@ -103,7 +99,7 @@ class TestSapcontrolModule(ModuleTestCase):
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
 
     def test_success_port(self):
-        """test success with port"""
+        """Test successful execution with port."""
 
         args = {
             "hostname": "192.168.8.15",
@@ -124,7 +120,7 @@ class TestSapcontrolModule(ModuleTestCase):
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
 
     def test_success_local(self):
-        """test success with local port"""
+        """Test successful execution with local port."""
 
         args = {
             "function": "ListInstances"
@@ -143,7 +139,7 @@ class TestSapcontrolModule(ModuleTestCase):
         self.assertEqual(result.exception.args[0]['out'], [ret_dict])
 
     def test_success_parameters(self):
-        """test success with parameters"""
+        """Test successful execution with parameters."""
 
         args = {
             "hostname": "192.168.8.15",
