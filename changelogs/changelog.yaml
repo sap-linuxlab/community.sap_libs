@@ -144,3 +144,15 @@ releases:
       release_summary: This release adds new module `sap_hostctrl_exec` that allows executing `SAPHostcontrol` functions.
         New contributors readme is added to show our appreciation to contributors. 
     release_date: '2025-12-10'
+  1.7.0:
+    changes:
+      minor_changes:
+        - collection - Update all license headers (https://github.com/sap-linuxlab/community.sap_libs/pull/82)
+        - sap_hdbsql - Add error handling and secure flags for hdbsql (https://github.com/sap-linuxlab/community.sap_libs/pull/75)
+        - sap_system_facts - Add SID and permission check to facts module (https://github.com/sap-linuxlab/community.sap_libs/pull/73)
+        - sap_control_exec, sap_hostctrl_exec - Refactor to use shared utilities (https://github.com/sap-linuxlab/community.sap_libs/pull/78)
+        - sap_control_exec, sap_hostctrl_exec - QoL and Error handling (https://github.com/sap-linuxlab/community.sap_libs/pull/81)
+        - sapcar_extract - Add overwrite mode and improve exist validation (https://github.com/sap-linuxlab/community.sap_libs/pull/77)
+        - sap_hdbsql - Add new parameter named properties (https://github.com/sap-linuxlab/community.sap_libs/pull/79)
+      release_summary: This release includes various improvements and refactorings across the collection.
+    release_date: '2026-03-13'
