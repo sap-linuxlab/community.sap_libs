@@ -4,6 +4,25 @@ Community SAP Release Notes
 
 .. contents:: Topics
 
+v1.7.0
+======
+
+Release Summary
+---------------
+
+This release includes various improvements and refactorings across the collection.
+
+Minor Changes
+-------------
+- collection - Update all license headers (https://github.com/sap-linuxlab/community.sap_libs/pull/82)
+- sap_hdbsql - Add error handling and secure flags for hdbsql (https://github.com/sap-linuxlab/community.sap_libs/pull/75)
+- sap_system_facts - Add SID and permission check to facts module (https://github.com/sap-linuxlab/community.sap_libs/pull/73)
+- sap_control_exec, sap_hostctrl_exec - Refactor to use shared utilities (https://github.com/sap-linuxlab/community.sap_libs/pull/78)
+- sap_control_exec, sap_hostctrl_exec - QoL and Error handling (https://github.com/sap-linuxlab/community.sap_libs/pull/81)
+- sapcar_extract - Add overwrite mode and improve exist validation (https://github.com/sap-linuxlab/community.sap_libs/pull/77)
+- sap_hdbsql - Add new parameter named properties (https://github.com/sap-linuxlab/community.sap_libs/pull/79)
+
+
 v1.6.0
 ======
 
@@ -17,6 +36,7 @@ Minor Changes
 -------------
 - sap_control_exec - Add local socket support (https://github.com/sap-linuxlab/community.sap_libs/pull/66)
 - sap_hostctrl_exec - Add new module and tests (https://github.com/sap-linuxlab/community.sap_libs/pull/67)
+
 
 v1.5.0
 ======
