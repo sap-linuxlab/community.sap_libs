@@ -1,17 +1,22 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2022, Rainer Leber rainerleber@gmail.com, rainer.leber@sva.de,
-#                      Robert Kraemer @rkpobe, robert.kraemer@sva.de,
-#                      Yannick Douvry, ydouvry@oxya.com
+# Copyright (c) 2022-2026 The Project Contributors.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# For a detailed list of copyright holders and contribution history,
+# please refer to the CONTRIBUTORS.md file in the project root.
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -137,7 +142,7 @@ EXAMPLES = r"""
     function: ListInstances
     parameters:
       aSelector:
-        aInstanceStatus: S-INSTALLED # S-INSTALLED | S_RUNNING | S-STOPPED | S-LAST
+        aInstanceStatus: S-INSTALLED # S-INSTALLED | S-RUNNING | S-STOPPED | S-LAST
   become: true
   become_user: "{{ sap_sid | lower }}adm"
 
@@ -255,74 +260,15 @@ out:
 '''
 
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-import traceback
-import socket
-import os
 
-try:
-    from urllib.request import HTTPHandler
-except ImportError:
-    from ansible.module_utils.urls import (
-        UnixHTTPHandler as HTTPHandler,
-    )
-
-try:
-    from http.client import HTTPConnection
-except ImportError:
-    from httplib import HTTPConnection
-
-try:
-    from suds.client import Client
-    from suds.sudsobject import asdict
-    from suds.transport.http import HttpAuthenticated, HttpTransport
-    HAS_SUDS_LIBRARY = True
-    SUDS_LIBRARY_IMPORT_ERROR = None
-
-    class LocalSocketHttpAuthenticated(HttpAuthenticated):
-        """Authenticated HTTP transport using Unix domain sockets."""
-        def __init__(self, socketpath, **kwargs):
-            HttpAuthenticated.__init__(self, **kwargs)
-            self._socketpath = socketpath
-
-        def u2handlers(self):
-            handlers = HttpTransport.u2handlers(self)
-            handlers.append(LocalSocketHandler(socketpath=self._socketpath))
-            return handlers
-
-except ImportError:
-    HAS_SUDS_LIBRARY = False
-    SUDS_LIBRARY_IMPORT_ERROR = traceback.format_exc()
-
-    # Define dummy class when suds is not available
-    class LocalSocketHttpAuthenticated(object):
-        def __init__(self, socketpath, **kwargs):
-            pass
-
-        def u2handlers(self):
-            return []
-
-
-class LocalSocketHttpConnection(HTTPConnection):
-    """HTTP connection class that uses Unix domain sockets."""
-    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 source_address=None, socketpath=None):
-        super(LocalSocketHttpConnection, self).__init__(host, port, timeout, source_address)
-        self.socketpath = socketpath
-
-    def connect(self):
-        """Connect to Unix domain socket."""
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock.connect(self.socketpath)
-
-
-class LocalSocketHandler(HTTPHandler):
-    """HTTP handler for Unix domain sockets."""
-    def __init__(self, debuglevel=0, socketpath=None):
-        self._debuglevel = debuglevel
-        self._socketpath = socketpath
-
-    def http_open(self, req):
-        return self.do_open(LocalSocketHttpConnection, req, socketpath=self._socketpath)
+from ..module_utils.sapstartsrv_client import (
+    HAS_SUDS_LIBRARY,
+    SUDS_LIBRARY_IMPORT_ERROR,
+    recursive_dict,
+    call_sap_hostctrl as connection,
+    is_read_only_function,
+    requires_force,
+)
 
 
 def choices():
@@ -334,56 +280,6 @@ def choices():
                "ListDatabases", "ListDatabaseSystems", "ListInstances", "LiveDatabaseUpdate", "PrepareDatabaseCopy", "RegisterInstanceService",
                "SetDatabaseProperty", "StartDatabase", "StartInstance", "StopDatabase", "StopInstance", "UnregisterInstanceService"]
     return retlist
-
-
-# converts recursively the suds object to a dictionary e.g. {'item': [{'name': hdbdaemon, 'value': '1'}]}
-def recursive_dict(suds_object):
-    out = {}
-    if isinstance(suds_object, str):
-        return suds_object
-    for k, v in asdict(suds_object).items():
-        if hasattr(v, '__keylist__'):
-            out[k] = recursive_dict(v)
-        elif isinstance(v, list):
-            out[k] = []
-            for item in v:
-                if hasattr(item, '__keylist__'):
-                    out[k].append(recursive_dict(item))
-                else:
-                    out[k].append(item)
-        else:
-            out[k] = v
-    return out
-
-
-def connection(hostname, port, username, password, function, parameters, use_local=False):
-    if use_local:
-        # Use Unix domain socket for local connection
-        unix_socket = "/tmp/.sapstream1128"
-
-        # Check if socket exists
-        if not os.path.exists(unix_socket):
-            raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
-
-        url = "http://localhost/SAPHostControl/?wsdl"
-
-        try:
-            localsocket = LocalSocketHttpAuthenticated(unix_socket)
-            client = Client(url, transport=localsocket)
-        except Exception as e:
-            raise Exception("Failed to connect via Unix socket: {0}".format(str(e)))
-    else:
-        # Use HTTP connection (original behavior)
-        url = 'http://{0}:{1}/SAPHostControl/?wsdl'.format(hostname, port)
-        client = Client(url, username=username, password=password)
-
-    _function = getattr(client.service, function)
-    if parameters is not None:
-        result = _function(**parameters)
-    else:
-        result = _function()
-
-    return result
 
 
 def main():
@@ -399,7 +295,7 @@ def main():
         ),
         supports_check_mode=False,
     )
-    result = dict(changed=False, msg='', out={}, error='')
+    result = dict(changed=False, msg='', out=[], error='')  # Default out to list for consistent return type.
     params = module.params
 
     port = params['port']
@@ -416,47 +312,52 @@ def main():
             exception=SUDS_LIBRARY_IMPORT_ERROR)
 
     # Validate arguments
-    if function == "StopDatabase" or function == "StopInstance":
-        if force is False:
-            module.fail_json(msg="Stop function requires force: True")
+    if requires_force(function) and force is False:
+        module.fail_json(msg="Function '{0}' requires force: True".format(function))
 
     # Determine if we should use local Unix socket connection
-    # Use local if hostname is localhost and no username/password provided
-    use_local = (hostname == "localhost" and
+    # Use local socket connection if hostname is localhost and no username/password provided
+    # True: Socket connection, False: SOAP connection
+    is_socket = (hostname == "localhost" and
                  username is None and
                  password is None)
 
     if port is None:
         try:
-            if use_local:
-                # Try local connection first
-                conn = connection(hostname, None, username, password, function, parameters, use_local=True)
+            if is_socket:
+                result['connection_type'] = 'socket'
+                result['connection_url'] = "http://localhost/SAPHostControl/?wsdl"
+
+                result_conn = connection(hostname, None, username, password, function, parameters, is_socket=True)
             else:
-                # Try HTTP ports
+                result['connection_type'] = 'soap'
+
+                # Try HTTPS and HTTP ports
                 try:
-                    conn = connection(hostname, "1129", username, password, function, parameters)
+                    result['connection_url'] = 'http://{0}:1129/SAPHostControl/?wsdl'.format(hostname)
+                    result_conn = connection(hostname, "1129", username, password, function, parameters)
                 except Exception:
-                    conn = connection(hostname, "1128", username, password, function, parameters)
+                    result['connection_url'] = 'http://{0}:1128/SAPHostControl/?wsdl'.format(hostname)
+                    result_conn = connection(hostname, "1128", username, password, function, parameters)
         except Exception as err:
             result['error'] = str(err)
     else:
+        result['connection_type'] = 'soap'
+        result['connection_url'] = 'http://{0}:{1}/SAPHostControl/?wsdl'.format(hostname, port)
         try:
-            conn = connection(hostname, port, username, password, function, parameters, use_local=False)
+            result_conn = connection(hostname, port, username, password, function, parameters, is_socket=False)
         except Exception as err:
             result['error'] = str(err)
 
     if result['error'] != '':
-        connection_type = "Unix socket" if use_local else "SOAP API"
-        result['msg'] = 'Something went wrong connecting to the {0}.'.format(connection_type)
+        result['msg'] = 'Function execution has failed. See error for more details.'
         module.fail_json(**result)
 
-    if conn is not None:
-        returned_data = recursive_dict(conn)
-    else:
-        returned_data = conn
+    conn_result = result_conn
+    returned_data = recursive_dict(conn_result) if conn_result is not None else conn_result
 
-    result['changed'] = True
-    result['msg'] = "Succesful execution of: " + function
+    result['changed'] = not is_read_only_function(function)
+    result['msg'] = "Successful execution of function: " + function
     result['out'] = [returned_data]
 
     module.exit_json(**result)

@@ -1,7 +1,21 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
 
-# Copyright: (c) 2021, Rainer Leber (@rainerleber) <rainerleber@gmail.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2022-2026 The Project Contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For a detailed list of copyright holders and contribution history,
+# please refer to the CONTRIBUTORS.md file in the project root.
 
 from __future__ import absolute_import, division, print_function
 
@@ -25,9 +39,23 @@ class Testsap_system_facts(ModuleTestCase):
         """Setup."""
         super(Testsap_system_facts, self).setUp()
         self.module = sap_system_facts
+
+        # Mock get_bin_path
         self.mock_get_bin_path = patch.object(basic.AnsibleModule, 'get_bin_path', get_bin_path)
         self.mock_get_bin_path.start()
         self.addCleanup(self.mock_get_bin_path.stop)
+
+        # Mock os.access to always return True
+        self.mock_os_access = patch('ansible_collections.community.sap_libs.plugins.modules.sap_system_facts.os.access')
+        self.mock_access = self.mock_os_access.start()
+        self.mock_access.return_value = True
+        self.addCleanup(self.mock_os_access.stop)
+
+        # NEW: Mock os.path.isdir to return True for base paths
+        self.mock_os_isdir = patch('ansible_collections.community.sap_libs.plugins.modules.sap_system_facts.os.path.isdir')
+        self.mock_isdir = self.mock_os_isdir.start()
+        self.mock_isdir.return_value = True
+        self.addCleanup(self.mock_os_isdir.stop)
 
     def tearDown(self):
         """Teardown."""
@@ -35,9 +63,13 @@ class Testsap_system_facts(ModuleTestCase):
 
     def test_no_systems_available(self):
         """No SAP Systems"""
-        with self.assertRaises(AnsibleExitJson) as result:
-            with set_module_args({}):
-                self.module.main()
+        with patch.object(self.module, 'get_all_hana_sid', return_value=[]):
+            with patch.object(self.module, 'get_all_nw_sid', return_value=[]):
+                with self.assertRaises(AnsibleExitJson) as result:
+                    with set_module_args({}):
+                        self.module.main()
+
+        # Check that ansible_facts is empty or doesn't have 'sap'
         self.assertEqual(result.exception.args[0]['ansible_facts'], {})
 
     def test_sap_system_facts_all(self):

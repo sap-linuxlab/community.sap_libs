@@ -1,7 +1,21 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
 
-# Copyright: (c) 2021, Rainer Leber (@rainerleber) <rainerleber@gmail.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2022-2026 The Project Contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For a detailed list of copyright holders and contribution history,
+# please refer to the CONTRIBUTORS.md file in the project root.
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -53,7 +67,7 @@ class Testsap_hdbsql(ModuleTestCase):
             'user': "SYSTEM",
             'password': "1234Qwer",
             'database': "HDB",
-            'query': "SELECT * FROM users;"
+            'query': ["SELECT * FROM users;"]
         }
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
@@ -76,7 +90,7 @@ class Testsap_hdbsql(ModuleTestCase):
             'user': "SYSTEM",
             'userstore': True,
             'database': "HDB",
-            'query': "SELECT * FROM users;"
+            'query': ["SELECT * FROM users;"]
         }
         with patch.object(basic.AnsibleModule, 'run_command') as run_command:
             run_command.return_value = 0, 'username,name\n  testuser,test user  \n myuser, my user   \n', ''
@@ -99,7 +113,108 @@ class Testsap_hdbsql(ModuleTestCase):
                 'host': "localhost",
                 'user': "SYSTEM",
                 'database': "HDB",
-                'query': "SELECT * FROM users;"
+                'query': ["SELECT * FROM users;"]
             }
             with set_module_args(args):
                 self.module.main()
+
+    def test_changed_status_select(self):
+        """Verify SELECT query returns changed=False"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "pwd",
+            'query': ["SELECT * FROM users;"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, 'col1\nval1', ''
+            with self.assertRaises(AnsibleExitJson) as result:
+                with set_module_args(args):
+                    self.module.main()
+            self.assertFalse(result.exception.args[0]['changed'])
+
+    def test_changed_status_update(self):
+        """Verify UPDATE query returns changed=True"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "pwd",
+            'query': ["UPDATE users SET name='test';"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, '', ''  # Updates often return empty string
+            with self.assertRaises(AnsibleExitJson) as result:
+                with set_module_args(args):
+                    self.module.main()
+            self.assertTrue(result.exception.args[0]['changed'])
+
+    def test_authentication_failure(self):
+        """Verify specific error message for Auth Failure"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "wrong",
+            'query': ["SELECT 1 FROM DUMMY;"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 10, '', 'Authentication failed'
+            with self.assertRaises(AnsibleFailJson) as result:
+                with set_module_args(args):
+                    self.module.main()
+            self.assertIn("Authentication Failed", result.exception.args[0]['msg'])
+
+    def test_insufficient_privilege(self):
+        """Verify specific error message for Privilege Error (Error 258)"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "pwd",
+            'query': ["DROP TABLE important_stuff;"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 1, '', '* 258: insufficient privilege'
+            with self.assertRaises(AnsibleFailJson) as result:
+                with set_module_args(args):
+                    self.module.main()
+            self.assertIn("Authorization Error", result.exception.args[0]['msg'])
+
+    def test_encrypted_connection_flags(self):
+        """Verify that encryption flags are correctly added to the command"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "pwd",
+            'encrypted': True,
+            'query': ["SELECT 1 FROM DUMMY;"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, '1', ''
+            with self.assertRaises(AnsibleExitJson):
+                with set_module_args(args):
+                    self.module.main()
+
+            # Get the actual command executed
+            executed_cmd = run_command.call_args[0][0]
+            self.assertIn('-e', executed_cmd)
+            self.assertIn('-ssltrustcert', executed_cmd)
+            self.assertIn('-sslcreatecert', executed_cmd)
+
+    def test_properties_command_args(self):
+        """Verify that properties are correctly added to the command"""
+        args = {
+            'sid': "HDB",
+            'instance': "01",
+            'password': "pwd",
+            'properties': ["key1=value1", "key2=value2"],
+            'query': ["SELECT 1 FROM DUMMY;"]
+        }
+        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, '1', ''
+            with self.assertRaises(AnsibleExitJson):
+                with set_module_args(args):
+                    self.module.main()
+
+            executed_cmd = run_command.call_args[0][0]
+            self.assertIn('-Z', executed_cmd)
+            self.assertIn('key1=value1', executed_cmd)
+            self.assertIn('key2=value2', executed_cmd)

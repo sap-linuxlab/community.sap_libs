@@ -1,16 +1,22 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2022, Rainer Leber rainerleber@gmail.com, rainer.leber@sva.de,
-#                      Robert Kraemer @rkpobe, robert.kraemer@sva.de
+# Copyright (c) 2022-2026 The Project Contributors.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# For a detailed list of copyright holders and contribution history,
+# please refer to the CONTRIBUTORS.md file in the project root.
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -132,8 +138,9 @@ options:
     parameter:
         description:
             - The parameter to pass to the function.
+            - Specific functions require complex parameters to be defined. See example for InstanceStart.
         required: false
-        type: str
+        type: raw
     force:
         description:
             - Forces the execution of the function C(Stop).
@@ -181,6 +188,15 @@ EXAMPLES = r"""
     function: GetProcessList
   become: true
   become_user: "{{ sap_sid | lower }}adm"
+
+- name: InstanceStart with complex parameter
+  community.sap_libs.sap_control_exec:
+    sysnr: "00"
+    function: InstanceStart
+  become: true
+  parameter:
+    host: "s4hana"
+    nr: "00"
 """
 
 RETURN = r'''
@@ -228,74 +244,15 @@ out:
 '''
 
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-import traceback
-import socket
-import os
 
-try:
-    from urllib.request import HTTPHandler
-except ImportError:
-    from ansible.module_utils.urls import (
-        UnixHTTPHandler as HTTPHandler,
-    )
-
-try:
-    from http.client import HTTPConnection
-except ImportError:
-    from httplib import HTTPConnection
-
-try:
-    from suds.client import Client
-    from suds.sudsobject import asdict
-    from suds.transport.http import HttpAuthenticated, HttpTransport
-    HAS_SUDS_LIBRARY = True
-    SUDS_LIBRARY_IMPORT_ERROR = None
-
-    class LocalSocketHttpAuthenticated(HttpAuthenticated):
-        """Authenticated HTTP transport using Unix domain sockets."""
-        def __init__(self, socketpath, **kwargs):
-            HttpAuthenticated.__init__(self, **kwargs)
-            self._socketpath = socketpath
-
-        def u2handlers(self):
-            handlers = HttpTransport.u2handlers(self)
-            handlers.append(LocalSocketHandler(socketpath=self._socketpath))
-            return handlers
-
-except ImportError:
-    HAS_SUDS_LIBRARY = False
-    SUDS_LIBRARY_IMPORT_ERROR = traceback.format_exc()
-
-    # Define dummy class when suds is not available
-    class LocalSocketHttpAuthenticated(object):
-        def __init__(self, socketpath, **kwargs):
-            pass
-
-        def u2handlers(self):
-            return []
-
-
-class LocalSocketHttpConnection(HTTPConnection):
-    """HTTP connection class that uses Unix domain sockets."""
-    def __init__(self, host, port=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 source_address=None, socketpath=None):
-        super(LocalSocketHttpConnection, self).__init__(host, port, timeout, source_address)
-        self.socketpath = socketpath
-
-    def connect(self):
-        """Connect to Unix domain socket."""
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock.connect(self.socketpath)
-
-
-class LocalSocketHandler(HTTPHandler):
-    """HTTP handler for Unix domain sockets."""
-    def __init__(self, debuglevel=0, socketpath=None):
-        self._debuglevel = debuglevel
-        self._socketpath = socketpath
-
-    def http_open(self, req):
-        return self.do_open(LocalSocketHttpConnection, req, socketpath=self._socketpath)
+from ..module_utils.sapstartsrv_client import (
+    HAS_SUDS_LIBRARY,
+    SUDS_LIBRARY_IMPORT_ERROR,
+    call_sap_control as connection,
+    recursive_dict,
+    is_read_only_function,
+    requires_force,
+)
 
 
 def choices():
@@ -314,60 +271,6 @@ def choices():
     return retlist
 
 
-# converts recursively the suds object to a dictionary e.g. {'item': [{'name': hdbdaemon, 'value': '1'}]}
-def recursive_dict(suds_object):
-    out = {}
-    if isinstance(suds_object, str):
-        return suds_object
-    for k, v in asdict(suds_object).items():
-        if hasattr(v, '__keylist__'):
-            out[k] = recursive_dict(v)
-        elif isinstance(v, list):
-            out[k] = []
-            for item in v:
-                if hasattr(item, '__keylist__'):
-                    out[k].append(recursive_dict(item))
-                else:
-                    out[k].append(item)
-        else:
-            out[k] = v
-    return out
-
-
-def connection(hostname, port, username, password, function, parameter, sysnr=None, use_local=False):
-    if use_local and sysnr is not None:
-        # Use Unix domain socket for local connection
-        unix_socket = "/tmp/.sapstream5{0}13".format(str(sysnr).zfill(2))
-
-        # Check if socket exists
-        if not os.path.exists(unix_socket):
-            raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
-
-        url = "http://localhost/sapcontrol?wsdl"
-
-        try:
-            localsocket = LocalSocketHttpAuthenticated(unix_socket)
-            client = Client(url, transport=localsocket)
-        except Exception as e:
-            raise Exception("Failed to connect via Unix socket: {0}".format(str(e)))
-    else:
-        # Use HTTP connection (original behavior)
-        url = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
-        client = Client(url, username=username, password=password)
-
-    _function = getattr(client.service, function)
-    if parameter is not None:
-        result = _function(parameter)
-    elif function == "StartSystem":
-        result = _function(waittimeout=0)
-    elif function == "StopSystem" or function == "RestartSystem":
-        result = _function(waittimeout=0, softtimeout=0)
-    else:
-        result = _function()
-
-    return result
-
-
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -377,7 +280,7 @@ def main():
             password=dict(type='str', no_log=True, required=False),
             hostname=dict(type='str', default="localhost"),
             function=dict(type='str', required=True, choices=choices()),
-            parameter=dict(type='str', required=False),
+            parameter=dict(type='raw', required=False),  # raw will allow dict or string.
             force=dict(type='bool', default=False),
         ),
         # Remove strict requirements to allow local mode
@@ -385,7 +288,7 @@ def main():
         mutually_exclusive=[('sysnr', 'port')],
         supports_check_mode=False,
     )
-    result = dict(changed=False, msg='', out={}, error='')
+    result = dict(changed=False, msg='', out=[], error='')  # Default out to list for consistent return type.
     params = module.params
 
     sysnr = params['sysnr']
@@ -409,49 +312,73 @@ def main():
     if sysnr is not None and port is not None:
         module.fail_json(msg="'sysnr' and 'port' are mutually exclusive")
 
-    if function == "Stop":
-        if force is False:
-            module.fail_json(msg="Stop function requires force: True")
+    if requires_force(function) and force is False:
+        module.fail_json(msg="Function '{0}' requires force: True".format(function))
+
+    if function == "StartSystem":
+        parameter = dict(waittimeout=0)
+    elif function == "StopSystem" or function == "RestartSystem":
+        parameter = dict(waittimeout=0, softtimeout=0)
 
     # Determine if we should use local Unix socket connection
-    # Use local if hostname is localhost and no username/password provided
-    use_local = (hostname == "localhost" and
+    # Use local socket connection if hostname is localhost and no username/password provided
+    # True: Socket connection, False: SOAP connection
+    is_socket = (hostname == "localhost" and
                  username is None and
                  password is None and
                  sysnr is not None)
 
     if port is None:
         try:
-            if use_local:
-                # Try local connection first
-                conn = connection(hostname, None, username, password, function, parameter, sysnr, use_local=True)
+            if is_socket:
+                result['connection_type'] = 'socket'
+                result['connection_url'] = "http://localhost/sapcontrol?wsdl"
+
+                result_conn = connection(hostname, None, username, password, function, parameter, sysnr=sysnr, is_socket=True)
             else:
-                # Try HTTP ports
+                result['connection_type'] = 'soap'
+
+                # Try HTTPS and HTTP ports
                 try:
-                    conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
+                    result['connection_url'] = 'http://{0}:5{1}14/sapcontrol?wsdl'.format(hostname, str(sysnr).zfill(2))
+                    result_conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
                 except Exception:
-                    conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
+                    result['connection_url'] = 'http://{0}:5{1}13/sapcontrol?wsdl'.format(hostname, str(sysnr).zfill(2))
+                    result_conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
         except Exception as err:
-            result['error'] = str(err)
+            if "already started" in str(err).lower():
+                already_started_msg = "Function {0} returned that Instance is already started.".format(function)
+                result_conn = ({"status": "already_started", "msg": already_started_msg})
+            else:
+                result['error'] = str(err)
     else:
+        result['connection_type'] = 'soap'
+        result['connection_url'] = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
         try:
-            conn = connection(hostname, port, username, password, function, parameter, sysnr, use_local=False)
+            result_conn = connection(hostname, port, username, password, function, parameter, sysnr, is_socket=False)
         except Exception as err:
-            result['error'] = str(err)
+            if "already started" in str(err).lower():
+                already_started_msg = "Function {0} returned that Instance is already started.".format(function)
+                result_conn = ({"status": "already_started", "msg": already_started_msg})
+            else:
+                result['error'] = str(err)
 
     if result['error'] != '':
-        connection_type = "Unix socket" if use_local else "SOAP API"
-        result['msg'] = 'Something went wrong connecting to the {0}.'.format(connection_type)
+        result['msg'] = 'Function execution has failed. See error for more details.'
         module.fail_json(**result)
 
-    if conn is not None:
-        returned_data = recursive_dict(conn)
-    else:
-        returned_data = conn
+    conn_result = result_conn
 
-    result['changed'] = True
-    result['msg'] = "Succesful execution of: " + function
-    result['out'] = [returned_data]
+    # Ensure that we run recursive_dict only on dict and leave it for idempotent functions.
+    if isinstance(conn_result, dict) and conn_result.get('status') == 'already_started':
+        result['changed'] = False
+        result['msg'] = conn_result.get('msg')
+        result['out'] = [None]  # Ensure we return same content as Start and Stop functions for consistency
+    else:
+        result['changed'] = not is_read_only_function(function)
+        result['msg'] = "Successful execution of function: " + function
+        returned_data = recursive_dict(conn_result) if conn_result is not None else conn_result
+        result['out'] = [returned_data]
 
     module.exit_json(**result)
 

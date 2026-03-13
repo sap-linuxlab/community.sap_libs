@@ -1,7 +1,21 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
 
-# Copyright: (c) 2021, Rainer Leber (@rainerleber) <rainerleber@gmail.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2022-2026 The Project Contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For a detailed list of copyright holders and contribution history,
+# please refer to the CONTRIBUTORS.md file in the project root.
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -45,10 +59,27 @@ class Testsapcar_extract(ModuleTestCase):
             'dest': "/tmp/test2",
             'binary_path': "/tmp/sapcar"
         }
-        with patch.object(basic.AnsibleModule, 'run_command') as run_command:
-            run_command.return_value = 0, '', ''  # successful execution, no output
+        with patch('os.path.isfile', return_value=True), \
+             patch('os.access', return_value=True), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.listdir', return_value=[]), \
+             patch.object(basic.AnsibleModule, 'run_command') as run_command:
+            run_command.return_value = 0, 'file1\nfile2', ''
             with self.assertRaises(AnsibleExitJson) as result:
                 with set_module_args(args):
                     sapcar_extract.main()
-                self.assertTrue(result.exception.args[0]['changed'])
-        self.assertEqual(run_command.call_count, 1)
+            self.assertTrue(result.exception.args[0]['changed'])
+        self.assertGreaterEqual(run_command.call_count, 1)
+
+    def test_file_missing(self):
+        """Failure must occur when SAR file does not exist."""
+        args = {
+            'path': "/tmp/nonexistent.SAR",
+            'dest': "/tmp/test2",
+            'binary_path': "/tmp/sapcar"
+        }
+        with patch('os.path.isfile', return_value=False):
+            with self.assertRaises(AnsibleFailJson) as result:
+                with set_module_args(args):
+                    sapcar_extract.main()
+            self.assertIn('File missing', result.exception.args[0]['msg'])

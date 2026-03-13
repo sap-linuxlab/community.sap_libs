@@ -1,16 +1,22 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# Copyright: (c) 2021, Rainer Leber <rainerleber@gmail.com>
+# Copyright (c) 2022-2026 The Project Contributors.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# For a detailed list of copyright holders and contribution history,
+# please refer to the CONTRIBUTORS.md file in the project root.
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -56,6 +62,13 @@ options:
       - If C(true), the SAR/CAR file will be removed. B(This should be used with caution!)
     default: false
     type: bool
+  overwrite:
+    description:
+      - If C(true), existing files will be overwritten during extraction. B(This should be used with caution!)
+      - If C(false), the module checks if the expected file names are already present in the destination folder and only extracts if they are not found.
+      - It does not remove files, but overwrites them if they are already present in the destination folder.
+    default: false
+    type: bool
 author:
     - Rainer Leber (@RainerLeber)
 notes:
@@ -94,6 +107,34 @@ EXAMPLES = r"""
     manifest: "MyNewSignature.SMF"
     signature: true
 """
+
+RETURN = r'''
+msg:
+    description: Status message about the extraction operation.
+    type: str
+    returned: always
+    sample: "Files extracted to /tmp/test2 (overwrite mode enabled)"
+stdout:
+    description: Standard output from the SAPCAR command.
+    type: str
+    returned: always
+    sample: "SAPCAR: processing archive /tmp/hana.sar (version 2.01)\\nfile1\\nfile2"
+stderr:
+    description: Standard error from the SAPCAR command.
+    type: str
+    returned: always
+    sample: ""
+command:
+    description: The full SAPCAR command that was executed.
+    type: str
+    returned: always
+    sample: "/tmp/sapcar -xvf /tmp/hana.sar -R /tmp/test2"
+changed:
+    description: Whether the module made changes.
+    type: bool
+    returned: always
+    sample: true
+'''
 
 import os
 from tempfile import NamedTemporaryFile
@@ -139,24 +180,29 @@ def download_SAPCAR(binary_path, module):
 
 
 def check_if_present(command, path, dest, signature, manifest, module):
-    # manipulating output from SAR file for compare with already extracted files
+    # Get list of files from sar file without extraction
     iter_command = [command, '-tvf', path]
     sar_out = module.run_command(iter_command)[1]
     sar_raw = sar_out.split("\n")[1:]
+
     if dest[-1] != "/":
         dest = dest + "/"
     sar_files = [dest + x.split(" ")[-1] for x in sar_raw if x]
+
     # remove any SIGNATURE.SMF from list because it will not unpacked if signature is false
     if not signature:
         sar_files = [item for item in sar_files if not item.endswith('.SMF')]
+
     # if signature is renamed manipulate files in list of sar file for compare.
     if manifest != "SIGNATURE.SMF":
         sar_files = [item for item in sar_files if not item.endswith('.SMF')]
         sar_files = sar_files + [manifest]
+
     # get extracted files if present
     files_extracted = get_list_of_files(dest)
     # compare extracted files with files in sar file
     present = all(elem in files_extracted for elem in sar_files)
+
     return present
 
 
@@ -170,6 +216,7 @@ def main():
             security_library=dict(type='path'),
             manifest=dict(type='str', default="SIGNATURE.SMF"),
             remove=dict(type='bool', default=False),
+            overwrite=dict(type='bool', default=False)
         ),
         supports_check_mode=True,
     )
@@ -177,17 +224,19 @@ def main():
     params = module.params
     check_mode = module.check_mode
 
-    path = params['path']
-    dest = params['dest']
-    signature = params['signature']
-    security_library = params['security_library']
-    manifest = params['manifest']
-    remove = params['remove']
-
     bin_path = download_SAPCAR(params['binary_path'], module)
 
+    # Check if path is present and readable
+    if os.path.isfile(params['path']):
+        if not os.access(params['path'], os.R_OK):
+            module.fail_json(msg="Permission denied: File defined in the 'path' parameter is not readable: {0}".format(params['path']))
+    else:
+        module.fail_json(msg='File missing: File defined in the "path" parameter does not exist: {0}'.format(params['path']))
+
+    # Check if destination exists and it is directory, if not create it.
+    dest = params['dest']
     if dest is None:
-        dest_head_tail = os.path.split(path)
+        dest_head_tail = os.path.split(params['path'])
         dest = dest_head_tail[0] + '/'
     else:
         if not os.path.exists(dest):
@@ -202,25 +251,33 @@ def main():
             module.fail_json(msg='Failed to find SAPCAR at the expected path or URL "{0}". Please check whether it is available: {1}'
                              .format(bin_path, to_native(e)))
 
-    present = check_if_present(command[0], path, dest, signature, manifest, module)
+    present = check_if_present(command[0], params['path'], dest, params['signature'], params['manifest'], module)
 
-    if not present:
-        command.extend(['-xvf', path, '-R', dest])
-        if security_library:
-            command.extend(['-L', security_library])
-        if signature:
-            command.extend(['-manifest', manifest])
+    if not present or params['overwrite']:
+        command.extend(['-xvf', params['path'], '-R', dest])
+
+        if params['security_library']:
+            command.extend(['-L', params['security_library']])
+
+        if params['signature']:
+            command.extend(['-manifest', params['manifest']])
+
         if not check_mode:
             (rc, out, err) = module.run_command(command, check_rc=True)
         changed = True
+        msg = "Files extracted to {0}".format(dest)
+        if params['overwrite']:
+            msg += " (overwrite mode enabled)"
+
     else:
         changed = False
-        out = "already unpacked"
+        msg = "Expected file names were found in {0}. No extraction needed.".format(dest)
+        out = ""
 
-    if remove:
-        os.remove(path)
+    if params['remove']:
+        os.remove(params['path'])
 
-    module.exit_json(changed=changed, message=rc, stdout=out,
+    module.exit_json(changed=changed, msg=msg, stdout=out,
                      stderr=err, command=' '.join(command))
 
 
