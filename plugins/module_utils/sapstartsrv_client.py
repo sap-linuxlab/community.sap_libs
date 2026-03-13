@@ -63,6 +63,21 @@ except ImportError:
         def u2handlers(self):
             return []
 
+# Constant that defines accepted function prefixes, that are not doing changes.
+READ_ONLY_FUNCTION_PREFIXES = (
+    "get",
+    "list",
+    "enqget",
+    "abapget",
+    "icmget",
+    "cmget",
+    "webdispget",
+)
+
+# Constants that define if force mode is required for certain functions.
+FORCE_REQUIRED_PREFIXES = ("stop", "restart")
+FORCE_REQUIRED_EXACT = ("shutdown", "instancestop")
+
 
 class LocalSocketHttpConnection(HTTPConnection):
     """HTTP connection class that uses Unix domain sockets."""
@@ -85,6 +100,22 @@ class LocalSocketHandler(HTTPHandler):
 
     def http_open(self, req):
         return self.do_open(LocalSocketHttpConnection, req, socketpath=self._socketpath)
+
+
+def is_read_only_function(function_name):
+    """Return True for read-only functions (e.g. Get*, List*)."""
+    if not function_name:
+        return False
+    fname = function_name.strip().lower()
+    return any(fname.startswith(prefix) for prefix in READ_ONLY_FUNCTION_PREFIXES)
+
+
+def requires_force(function_name):
+    """Return True when function should require force=True."""
+    if not function_name:
+        return False
+    fname = function_name.strip().lower()
+    return fname in FORCE_REQUIRED_EXACT or fname.startswith(FORCE_REQUIRED_PREFIXES)
 
 
 def recursive_dict(suds_object):
@@ -110,46 +141,53 @@ def recursive_dict(suds_object):
     return out
 
 
-def connection(service_name, hostname, port, username, password, sysnr=None, use_local=False):
+def connection(service_name, hostname, port, username, password, sysnr=None, is_socket=False):
     """
     Return a SOAP client for the given service (sapcontrol or saphostctrl).
     """
-    if use_local:
+    # Prepare connection details before attempting to connect.
+    if is_socket:
         # Use Unix domain socket for local connection
         if sysnr is not None:
-            # For sapcontrol, the socket name includes the system number
+            # sapcontrol: The socket name includes the system number
             unix_socket = "/tmp/.sapstream5{0}13".format(str(sysnr).zfill(2))
         else:
-            # For saphostctrl, the socket name is fixed
+            # saphostctrl: The socket name is fixed
             unix_socket = "/tmp/.sapstream1128"
 
-        # Check if socket exists
-        if not os.path.exists(unix_socket):
-            raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
+        connection_url = "http://localhost/{0}?wsdl".format(service_name)
 
-        url = "http://localhost/{0}?wsdl".format(service_name)
-
-        try:
-            localsocket = LocalSocketHttpAuthenticated(unix_socket)
-            client = Client(url, transport=localsocket)
-        except Exception as e:
-            raise Exception("Failed to connect via Unix socket: {0}".format(str(e)))
     else:
         # Use HTTP connection (original behavior)
-        url = 'http://{0}:{1}/{2}?wsdl'.format(hostname, port, service_name)
-        client = Client(url, username=username, password=password)
+        connection_url = 'http://{0}:{1}/{2}?wsdl'.format(hostname, port, service_name)
 
-    return client
+    # Attempt to connect using the appropriate method
+    try:
+        if is_socket:
+            if not os.path.exists(unix_socket):
+                raise Exception("SAP control Unix socket not found: {0}".format(unix_socket))
+
+            localsocket = LocalSocketHttpAuthenticated(unix_socket)
+            client = Client(connection_url, transport=localsocket)
+        else:
+            client = Client(connection_url, username=username, password=password, timeout=10)
+
+        return client
+
+    except Exception as e:
+        raise e
 
 
-def call_sap_control(hostname, port, username, password, function, parameters, sysnr=None, use_local=False):
-    con = connection("sapcontrol", hostname, port, username, password, sysnr=sysnr, use_local=use_local)
-    return call_function(con, function, parameters)
+def call_sap_control(hostname, port, username, password, function, parameters, sysnr=None, is_socket=False):
+    client = connection(
+        "sapcontrol", hostname, port, username, password, sysnr=sysnr, is_socket=is_socket)
+    return call_function(client, function, parameters)
 
 
-def call_sap_hostctrl(hostname, port, username, password, function, parameters, use_local=False):
-    con = connection("SAPHostControl/", hostname, port, username, password, sysnr=None, use_local=use_local)
-    return call_function(con, function, parameters)
+def call_sap_hostctrl(hostname, port, username, password, function, parameters, is_socket=False):
+    client = connection(
+        "SAPHostControl/", hostname, port, username, password, sysnr=None, is_socket=is_socket)
+    return call_function(client, function, parameters)
 
 
 def call_function(client, function, parameters=None):

@@ -132,8 +132,9 @@ options:
     parameter:
         description:
             - The parameter to pass to the function.
+            - Specific functions require complex parameters to be defined. See example for InstanceStart.
         required: false
-        type: str
+        type: raw
     force:
         description:
             - Forces the execution of the function C(Stop).
@@ -181,6 +182,15 @@ EXAMPLES = r"""
     function: GetProcessList
   become: true
   become_user: "{{ sap_sid | lower }}adm"
+
+- name: InstanceStart with complex parameter
+  community.sap_libs.sap_control_exec:
+    sysnr: "00"
+    function: InstanceStart
+  become: true
+  parameter:
+    host: "s4hana"
+    nr: "00"
 """
 
 RETURN = r'''
@@ -234,6 +244,8 @@ from ..module_utils.sapstartsrv_client import (
     SUDS_LIBRARY_IMPORT_ERROR,
     call_sap_control as connection,
     recursive_dict,
+    is_read_only_function,
+    requires_force,
 )
 
 
@@ -262,7 +274,7 @@ def main():
             password=dict(type='str', no_log=True, required=False),
             hostname=dict(type='str', default="localhost"),
             function=dict(type='str', required=True, choices=choices()),
-            parameter=dict(type='str', required=False),
+            parameter=dict(type='raw', required=False),  # raw will allow dict or string.
             force=dict(type='bool', default=False),
         ),
         # Remove strict requirements to allow local mode
@@ -270,7 +282,7 @@ def main():
         mutually_exclusive=[('sysnr', 'port')],
         supports_check_mode=False,
     )
-    result = dict(changed=False, msg='', out={}, error='')
+    result = dict(changed=False, msg='', out=[], error='')  # Default out to list for consistent return type.
     params = module.params
 
     sysnr = params['sysnr']
@@ -294,9 +306,8 @@ def main():
     if sysnr is not None and port is not None:
         module.fail_json(msg="'sysnr' and 'port' are mutually exclusive")
 
-    if function == "Stop":
-        if force is False:
-            module.fail_json(msg="Stop function requires force: True")
+    if requires_force(function) and force is False:
+        module.fail_json(msg="Function '{0}' requires force: True".format(function))
 
     if function == "StartSystem":
         parameter = dict(waittimeout=0)
@@ -304,44 +315,64 @@ def main():
         parameter = dict(waittimeout=0, softtimeout=0)
 
     # Determine if we should use local Unix socket connection
-    # Use local if hostname is localhost and no username/password provided
-    use_local = (hostname == "localhost" and
+    # Use local socket connection if hostname is localhost and no username/password provided
+    # True: Socket connection, False: SOAP connection
+    is_socket = (hostname == "localhost" and
                  username is None and
                  password is None and
                  sysnr is not None)
 
     if port is None:
         try:
-            if use_local:
-                # Try local connection first
-                result_conn = connection(hostname, None, username, password, function, parameter, sysnr=sysnr, use_local=True)
+            if is_socket:
+                result['connection_type'] = 'socket'
+                result['connection_url'] = "http://localhost/sapcontrol?wsdl"
+
+                result_conn = connection(hostname, None, username, password, function, parameter, sysnr=sysnr, is_socket=True)
             else:
-                # Try HTTP ports
+                result['connection_type'] = 'soap'
+
+                # Try HTTPS and HTTP ports
                 try:
+                    result['connection_url'] = 'http://{0}:5{1}14/sapcontrol?wsdl'.format(hostname, str(sysnr).zfill(2))
                     result_conn = connection(hostname, "5{0}14".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
                 except Exception:
+                    result['connection_url'] = 'http://{0}:5{1}13/sapcontrol?wsdl'.format(hostname, str(sysnr).zfill(2))
                     result_conn = connection(hostname, "5{0}13".format((sysnr).zfill(2)), username, password, function, parameter, sysnr)
         except Exception as err:
-            result['error'] = str(err)
+            if "already started" in str(err).lower():
+                already_started_msg = "Function {0} returned that Instance is already started.".format(function)
+                result_conn = ({"status": "already_started", "msg": already_started_msg})
+            else:
+                result['error'] = str(err)
     else:
+        result['connection_type'] = 'soap'
+        result['connection_url'] = 'http://{0}:{1}/sapcontrol?wsdl'.format(hostname, port)
         try:
-            result_conn = connection(hostname, port, username, password, function, parameter, sysnr, use_local=False)
+            result_conn = connection(hostname, port, username, password, function, parameter, sysnr, is_socket=False)
         except Exception as err:
-            result['error'] = str(err)
+            if "already started" in str(err).lower():
+                already_started_msg = "Function {0} returned that Instance is already started.".format(function)
+                result_conn = ({"status": "already_started", "msg": already_started_msg})
+            else:
+                result['error'] = str(err)
 
     if result['error'] != '':
-        connection_type = "Unix socket" if use_local else "SOAP API"
-        result['msg'] = 'Something went wrong connecting to the {0}.'.format(connection_type)
+        result['msg'] = 'Function execution has failed. See error for more details.'
         module.fail_json(**result)
 
-    if result_conn is not None:
-        returned_data = recursive_dict(result_conn)
-    else:
-        returned_data = result_conn
+    conn_result = result_conn
 
-    result['changed'] = True
-    result['msg'] = "Succesful execution of: " + function
-    result['out'] = [returned_data]
+    # Ensure that we run recursive_dict only on dict and leave it for idempotent functions.
+    if isinstance(conn_result, dict) and conn_result.get('status') == 'already_started':
+        result['changed'] = False
+        result['msg'] = conn_result.get('msg')
+        result['out'] = [None]  # Ensure we return same content as Start and Stop functions for consistency
+    else:
+        result['changed'] = not is_read_only_function(function)
+        result['msg'] = "Successful execution of function: " + function
+        returned_data = recursive_dict(conn_result) if conn_result is not None else conn_result
+        result['out'] = [returned_data]
 
     module.exit_json(**result)
 
