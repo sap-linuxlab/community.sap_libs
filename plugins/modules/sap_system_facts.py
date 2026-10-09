@@ -221,12 +221,14 @@ def get_nw_nr(sids, module):
                 check_instance = module.run_command(command, check_rc=False)
                 if check_instance[0] != 1:
                     for line in check_instance[1].splitlines():
+                        if re.search("StartPriority", line):
+                            start_priority = (line.strip('][').split(', '))[-1]
                         if re.search('INSTANCE_NAME', line):
                             # convert to list and extract last
                             type_raw = (line.strip('][').split(', '))[-1]
                             # split instance number
                             type = type_raw[:-2]
-                            nw_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': get_instance_type(type), 'InstanceType': 'NW'})
+                            nw_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': get_instance_type(type), 'START_PRIORITY': start_priority, 'InstanceType': 'NW'})
 
     return nw_list
 
