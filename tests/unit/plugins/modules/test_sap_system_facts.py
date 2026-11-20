@@ -149,8 +149,7 @@ class Testsap_system_facts(ModuleTestCase):
                 mock_listdir.return_value = ['D00']
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [
-                        {0, 'SAP\nINSTANCE_NAME, Attribute, D00\nSAP', ''},
-                        {1, 'SAP\nStartPriority, Attribute, 1', ''}
+                        {0, 'SAP\nINSTANCE_NAME, Attribute, D00\nSAP\nStartPriority, Attribute, 1\nSAP', ''}
                     ]
                     with self.assertRaises(AnsibleExitJson) as result:
                         with set_module_args({}):
@@ -180,8 +179,7 @@ class Testsap_system_facts(ModuleTestCase):
                 mock_listdir.return_value = ['XY00']
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [
-                        {0, 'SAP\nINSTANCE_NAME, Attribute, XY00\nSAP', ''},
-                        {1, 'SAP\nStartPriority, Attribute, 8\nSAP', ''}
+                        {0, 'SAP\nINSTANCE_NAME, Attribute, XY00\nSAP\nStartPriority, Attribute, 8\nSAP', ''}
                     ]
                     with self.assertRaises(AnsibleExitJson) as result:
                         with set_module_args({}):
@@ -211,8 +209,7 @@ class Testsap_system_facts(ModuleTestCase):
                 mock_listdir.return_value = ['WD80']
                 with patch.object(basic.AnsibleModule, 'run_command') as run_command:
                     run_command.return_value = [
-                        {0, 'SAP\nINSTANCE_NAME, Attribute, WD80\nSAP', ''},
-                        {1, 'SAP\nStartPriority, Attribute, 5\nSAP', ''}
+                        {0, 'SAP\nINSTANCE_NAME, Attribute, WD80\nSAP\nStartPriority, Attribute, 5\nSAP', ''}
                     ]
                     with self.assertRaises(AnsibleExitJson) as result:
                         with set_module_args({}):
