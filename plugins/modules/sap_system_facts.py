@@ -63,13 +63,15 @@ ansible_facts:
             "InstanceType": "NW",
             "NR": "00",
             "SID": "ABC",
-            "TYPE": "ASCS"
+            "TYPE": "ASCS",
+            "START_PRIORITY": "1"
         },
         {
             "InstanceType": "NW",
             "NR": "01",
             "SID": "ABC",
-            "TYPE": "PAS"
+            "TYPE": "PAS",
+            "START_PRIORITY": "0.5"
         },
         {
             "InstanceType": "HANA",
@@ -201,7 +203,6 @@ def get_nw_nr(sids, module):
     instance_pattern = re.compile(r'^[a-zA-Z]+(\d{2})$')
 
     sapcontrol_path = module.get_bin_path('/usr/sap/hostctrl/exe/sapcontrol', required=True)
-    type = ""
 
     for sid in sids:
         path = os.path.join('/usr/sap', sid)
@@ -215,18 +216,38 @@ def get_nw_nr(sids, module):
                 # 'match.group(1)' is the 2 digits captured by (\d{2})
                 instance_nr = match.group(1)
 
+                # Reset defaults per instance to prevent leaks.
+                type = ""
+                start_priority = None
+
                 command = [sapcontrol_path]
                 command.extend(['-nr', instance_nr, '-function', 'GetInstanceProperties'])
 
                 check_instance = module.run_command(command, check_rc=False)
                 if check_instance[0] != 1:
                     for line in check_instance[1].splitlines():
+                        if re.search("StartPriority", line):
+                            # Split into parts based on ', ' after stripping brackets.
+                            # Extract the last part which contains the start priority.
+                            parts = line.strip('][').split(', ')
+                            start_priority = parts[-1] if parts else None
+
                         if re.search('INSTANCE_NAME', line):
-                            # convert to list and extract last
-                            type_raw = (line.strip('][').split(', '))[-1]
-                            # split instance number
-                            type = type_raw[:-2]
-                            nw_list.append({'NR': instance_nr, 'SID': sid, 'TYPE': get_instance_type(type), 'InstanceType': 'NW'})
+                            # Split into parts based on ', ' after stripping brackets.
+                            # Extract the last two characters which represent the instance number.
+                            parts = line.strip('][').split(', ')
+                            type_raw = parts[-1] if parts else ""
+                            type = type_raw[:-2] if len(type_raw) > 2 else type_raw
+
+                    # Append once per instance after reading all lines.
+                    if type:
+                        nw_list.append({
+                            'NR': instance_nr,
+                            'SID': sid,
+                            'TYPE': get_instance_type(type),
+                            'START_PRIORITY': start_priority,
+                            'InstanceType': 'NW'
+                        })
 
     return nw_list
 
